@@ -1,0 +1,31 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local runtime state
+.taskboard-state/
+.clawqueue/
+idle_burner*.log
+
+# Private deployment overrides. Keep examples tracked.
+config/taskboard.private.json
+*.private.json
+
+# Local editor/OS files
+.DS_Store
+.env
+.env.*
+
+# Local task prompts or scratch notes
+TASK_PROMPT.txt
+
+# CQ profile secrets and generated profile work
+profiles/**/secrets/
+profiles/*/work/issues/
+
+# Node/VitePress
+node_modules/
+docs/.vitepress/cache/
+docs/site/

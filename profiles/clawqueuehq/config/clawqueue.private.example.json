@@ -1,0 +1,64 @@
+{
+  "github": {
+    "assignee": "your-github-login"
+  },
+  "routing": {
+    "agent_roles": {
+      "ceo": ["your-local-ceo-agent"],
+      "cto": ["your-local-cto-agent"],
+      "cmo": ["your-local-cmo-agent"],
+      "dev": ["main"],
+      "engineer": ["main"],
+      "reviewer": ["your-local-review-agent"]
+    },
+    "agent_provider": {
+      "your-local-ceo-agent": "codex",
+      "your-local-cto-agent": "codex",
+      "your-local-cmo-agent": "codex",
+      "your-local-review-agent": "codex",
+      "main": "codex"
+    },
+    "agent_fallback": {
+      "your-local-cto-agent": "your-local-ceo-agent",
+      "your-local-cmo-agent": "your-local-cto-agent",
+      "your-local-review-agent": "your-local-cto-agent"
+    }
+  },
+  "artifacts": {
+    "checkout_dir": "${HOME}/Code/clawqueue-worklog"
+  },
+  "notifications": {
+    "telegram_bot_token": "<telegram-bot-token>",
+    "telegram_chat_id": "<telegram-chat-id>"
+  },
+  "projects": {
+    "CORE": {
+      "project_id": "<github-project-node-id>",
+      "field_id": "<github-project-status-field-id>",
+      "status_options": {
+        "todo": "<todo-option-id>",
+        "in_progress": "<in-progress-option-id>",
+        "done": "<done-option-id>"
+      }
+    },
+    "GROWTH": {
+      "project_id": "<github-project-node-id>",
+      "field_id": "<github-project-status-field-id>",
+      "status_options": {
+        "todo": "<todo-option-id>",
+        "in_progress": "<in-progress-option-id>",
+        "done": "<done-option-id>"
+      }
+    },
+    "OPS": {
+      "project_id": "<github-project-node-id>",
+      "field_id": "<github-project-status-field-id>",
+      "status_options": {
+        "todo": "<todo-option-id>",
+        "in_progress": "<in-progress-option-id>",
+        "review": "<review-option-id>",
+        "done": "<done-option-id>"
+      }
+    }
+  }
+}

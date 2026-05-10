@@ -1,0 +1,37 @@
+{
+  "brand": "ClawQueue",
+  "short_name": "CQ",
+  "colors": {
+    "lobster_orange": "#FF4A12",
+    "lobster_red": "#E21B0C",
+    "deep_navy": "#07162B",
+    "ink_navy": "#0B1E3A",
+    "cyan": "#12BFF5",
+    "signal_blue": "#158BFF",
+    "ice_blue": "#EAF7FF",
+    "soft_bg": "#F7FAFC",
+    "white": "#FFFFFF",
+    "muted": "#64748B",
+    "border": "#DDE7F0"
+  },
+  "fonts": {
+    "heading": [
+      "Space Grotesk",
+      "Inter Tight",
+      "Inter"
+    ],
+    "body": [
+      "Inter",
+      "system-ui"
+    ],
+    "code": [
+      "JetBrains Mono",
+      "Geist Mono",
+      "monospace"
+    ]
+  },
+  "primary_cta": "Get Started",
+  "secondary_cta": "View GitHub",
+  "headline": "Local GitHub issue dispatch for operator-controlled AI agents",
+  "tagline": "Keep the contract in GitHub. Run the workers locally."
+}

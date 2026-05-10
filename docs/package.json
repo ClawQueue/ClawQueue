@@ -1,0 +1,1 @@
+{"name":"cq-docs","private":true,"type":"module","scripts":{"build":"vitepress build"},"devDependencies":{"vitepress":"^1.5.0","vue":"^3.5.0"}}

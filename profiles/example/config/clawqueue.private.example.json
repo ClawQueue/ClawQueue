@@ -1,0 +1,83 @@
+{
+  "github": {
+    "assignee": "your-github-login"
+  },
+  "repositories": {
+    "primary": "your-org/clawqueue",
+    "extras": [
+      "your-org/product-repo",
+      "your-org/data-or-dashboard-repo"
+    ]
+  },
+  "routing": {
+    "mode_to_agent": {
+      "ceo": "ceo",
+      "cto": "cto",
+      "cmo": "cmo",
+      "dev": "dev",
+      "engineer": "dev",
+      "researcher": "researcher",
+      "reviewer": "reviewer"
+    },
+    "agent_roles": {
+      "ceo": ["your-local-ceo-agent"],
+      "cto": ["your-local-cto-agent"],
+      "cmo": ["your-local-cmo-agent"],
+      "dev": ["your-local-dev-agent"],
+      "engineer": ["your-local-dev-agent"],
+      "researcher": ["your-local-research-agent"],
+      "reviewer": ["your-local-review-agent"]
+    },
+    "agent_provider": {
+      "your-local-ceo-agent": "codex",
+      "your-local-cto-agent": "codex",
+      "your-local-cmo-agent": "codex",
+      "your-local-dev-agent": "codex",
+      "your-local-research-agent": "codex",
+      "your-local-review-agent": "codex"
+    },
+    "agent_fallback": {
+      "your-local-cto-agent": "your-local-ceo-agent",
+      "your-local-cmo-agent": "your-local-cto-agent",
+      "your-local-research-agent": "your-local-cto-agent",
+      "your-local-review-agent": "your-local-cto-agent"
+    }
+  },
+  "artifacts": {
+    "checkout_dir": "${HOME}/Code/your-company-clawqueue-worklog"
+  },
+  "notifications": {
+    "telegram_bot_token": "<telegram-bot-token>",
+    "telegram_chat_id": "<telegram-chat-id>"
+  },
+  "projects": {
+    "MT": {
+      "project_id": "<github-project-node-id>",
+      "field_id": "<github-project-status-field-id>",
+      "status_options": {
+        "todo": "<todo-option-id>",
+        "in_progress": "<in-progress-option-id>",
+        "done": "<done-option-id>"
+      }
+    },
+    "GROWTH": {
+      "project_id": "<github-project-node-id>",
+      "field_id": "<github-project-status-field-id>",
+      "status_options": {
+        "todo": "<todo-option-id>",
+        "in_progress": "<in-progress-option-id>",
+        "done": "<done-option-id>"
+      }
+    },
+    "DATA": {
+      "project_id": "<github-project-node-id>",
+      "field_id": "<github-project-status-field-id>",
+      "status_options": {
+        "todo": "<todo-option-id>",
+        "in_progress": "<in-progress-option-id>",
+        "review": "<review-option-id>",
+        "done": "<done-option-id>"
+      }
+    }
+  }
+}
