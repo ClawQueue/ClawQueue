@@ -73,6 +73,9 @@ Use OpenClaw to sharpen messy ideas, project goals, and half-formed feature requ
 
 Start with the [docs](https://clawqueue.github.io/ClawQueue/), especially [Getting started](https://clawqueue.github.io/ClawQueue/start/getting-started) and the [operator workflow](https://clawqueue.github.io/ClawQueue/guide/operator-workflow).
 
+> [!TIP]
+> **Using OpenClaw?** Give your OpenClaw assistant [`docs/guide/operator-workflow.md`](docs/guide/operator-workflow.md) and say: “Install ClawQueue for this repo/profile, then explain back how the CQ process works before enabling automation.” That file is the best handoff document for a new OpenClaw installation because it covers the operating model, GitHub queue, agent routing, manual test run, and scheduler install.
+
 ## How CQ Fits
 
 ```mermaid

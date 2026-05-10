@@ -2,7 +2,26 @@
 
 CQ (ClawQueue) is a GitHub issue dispatcher for human-agent teams. The recommended operating model is simple: humans and assistants shape work into issues, GitHub Projects is the queue, and the CQ scheduler periodically picks eligible issues from configured dispatch statuses and launches the right agent.
 
-This document is for a newcomer setting up or operating CQ.
+This document is for a newcomer setting up or operating CQ. It is also the best file to hand to a fresh OpenClaw installation when you want it to install CQ and explain the workflow back to you.
+
+## Give this to OpenClaw
+
+If you are setting up CQ through OpenClaw, paste or point OpenClaw at this file and use a request like:
+
+> Read `docs/guide/operator-workflow.md`, inspect this repository, install/configure ClawQueue for the target profile, run one safe manual status/scheduler check, and explain back how the CQ process works before enabling launchd/cron automation.
+
+A good OpenClaw setup response should cover:
+
+- which repo/profile is active
+- which GitHub repo and Project board are the durable queue
+- which labels route to which roles/agents
+- which board statuses are dispatchable
+- where artifacts/worklogs go
+- how to run `scripts/status.py` and `scripts/scheduler.py` manually
+- what must be true before installing launchd/cron
+- what safety boundaries require human approval
+
+Do not enable periodic automation until one manual scheduler run is understandable and safe.
 
 ## Core idea
 
