@@ -8,6 +8,7 @@ The VitePress docs implementation currently uses:
 
 - Header/root README logo: `docs/public/brand/png/clawqueue-logo-full-horizontal.png`
 - Docs home hero mascot: `docs/public/brand/png/clawqueue-mascot-only.png`
+- GitHub social preview upload asset: `.github/social-preview.png` (built from `docs/public/brand/png/clawqueue-icon-with-queue.png`)
 - Favicons/app icons: `docs/public/brand/favicons/*`
 - Public brand tokens: `docs/public/brand/brand-tokens.json`
 - Public portable CSS tokens: `docs/public/brand/brand.css`
@@ -53,7 +54,7 @@ The custom VitePress theme uses these active CSS variables:
 
 - `docs/public/brand/png/clawqueue-logo-full-horizontal.png` — primary website/root README logo
 - `docs/public/brand/png/clawqueue-logo-stacked-square.png`
-- `docs/public/brand/png/clawqueue-icon-with-queue.png` — recommended icon/favicon source
+- `docs/public/brand/png/clawqueue-icon-with-queue.png` — recommended icon/favicon source; source image for `.github/social-preview.png`
 - `docs/public/brand/png/clawqueue-mascot-only.png` — docs homepage hero art
 - `docs/public/brand/png/clawqueue-wordmark.png`
 - `docs/public/brand/png/clawqueue-queue-symbol.png`
@@ -78,6 +79,13 @@ The custom VitePress theme uses these active CSS variables:
 - `docs/public/brand/favicons/clawqueue-icon-192.png`
 - `docs/public/brand/favicons/clawqueue-icon-256.png`
 - `docs/public/brand/favicons/clawqueue-icon-512.png`
+
+
+## GitHub repository social preview
+
+Use `.github/social-preview.png` for the GitHub repository social preview image. It is a 1280 × 640 PNG under 1 MB, using `clawqueue-icon-with-queue.png` centered on the docs navy background.
+
+GitHub does not apply this file automatically from the repository tree. An admin must upload it manually in GitHub: repository **Settings → Social preview → Edit → Upload an image**.
 
 ## Implementation notes
 

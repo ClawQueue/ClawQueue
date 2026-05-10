@@ -20,7 +20,7 @@ profiles/clawqueuehq/
   secrets/                   # ignored/private by default
 ```
 
-Generated artifacts should go to a second repo dedicated to worklog/artifacts such as `ClawQueue/clawqueuehq-worklog`, not into the same branch used for core code/profile PRs.
+Generated artifacts should go to a second repo dedicated to worklog/artifacts such as `ClawQueue/ClawQueue-reports`, not into the same branch used for core code/profile PRs.
 
 ## Using this profile
 
@@ -119,7 +119,7 @@ Recommended worklog config for CQ self-operation:
 ```json
 "artifacts": {
   "backend": "git",
-  "repo": "ClawQueue/clawqueuehq-worklog",
+  "repo": "ClawQueue/ClawQueue-reports",
   "path": "boards",
   "commit": true
 }

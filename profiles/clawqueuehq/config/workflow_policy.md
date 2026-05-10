@@ -99,7 +99,7 @@
   },
   "artifacts": {
     "backend": "git",
-    "repo": "ClawQueue/clawqueuehq-worklog",
+    "repo": "ClawQueue/ClawQueue-reports",
     "checkout_dir": "/Users/manolis/Code/clawqueuehq-worklog",
     "path": "boards",
     "commit": true
