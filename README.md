@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/public/brand/png/ClawQueue-alpha.png" alt="ClawQueue — a GitHub-native control loop for human-agent work" width="720"/>
+  <img src="docs/public/brand/png/ClawQueue-alpha.png" alt="ClawQueue — a GitHub-native control loop for human-agent work" width="360"/>
 </div>
 
 <br/>
