@@ -19,7 +19,7 @@ export default defineConfig({
     ['meta', { name: 'theme-color', content: '#03143A' }]
   ],
   themeConfig: {
-    logo: '/brand/svg/clawqueue-icon-with-queue.svg',
+    logo: '/brand/png/clawqueue-icon-with-queue.png',
     siteTitle: 'ClawQueue',
     nav: [
       { text: 'Guide', link: '/start/getting-started' },
