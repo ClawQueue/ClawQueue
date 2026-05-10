@@ -1,0 +1,184 @@
+---
+layout: home
+
+hero:
+  name: ClawQueue
+  text: Local GitHub issue dispatch for operator-controlled AI agents
+  tagline: Keep the contract in GitHub. Run the workers locally.
+  image:
+    src: /brand/png/clawqueue-mascot-only.png
+    alt: ClawQueue mascot
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /start/getting-started
+    - theme: alt
+      text: View GitHub
+      link: https://github.com/ClawQueue/ClawQueue
+    - theme: alt
+      text: Read the docs
+      link: /guide/operator-workflow
+
+features:
+  - title: Durable work contract
+    details: Issues, labels, projects, comments, branches, and PRs stay visible in GitHub instead of disappearing into a hidden runtime.
+  - title: Local scheduler
+    details: Your machine picks eligible issues, applies policy, and launches the configured local runner.
+  - title: Label-to-agent routing
+    details: Turn labels into modes like docs, review, implementation, research, and project-specific operator flows.
+  - title: Reviewable output
+    details: Results return as comments, artifacts, branch links, and PR-ready changes a human can inspect.
+  - title: Operator controlled
+    details: Secrets stay local. Policy stays editable. Human review stays in the loop.
+  - title: Small on purpose
+    details: ClawQueue is a lightweight dispatch layer, not a bloated hosted workflow suite.
+---
+
+<div class="cq-home">
+
+<div class="cq-signal-row" aria-label="trust bullets">
+  <span>Local-first</span>
+  <span>GitHub-native</span>
+  <span>Markdown-configurable</span>
+  <span>PR-reviewable</span>
+  <span>Built for one operator + their agents</span>
+</div>
+
+<div class="cq-mascot-cards">
+  <div class="cq-floating-card issue">issue #128</div>
+  <div class="cq-floating-card label">label: agent:fix</div>
+  <div class="cq-floating-card mode">mode: code-review</div>
+  <div class="cq-floating-card runner">runner: local</div>
+  <div class="cq-floating-card status">status: PR opened</div>
+</div>
+
+## GitHub is the durable work contract. Your machine runs the workers.
+
+ClawQueue keeps source-of-truth work in GitHub Issues and Projects, then uses a local scheduler to pick eligible work, resolve labels into the right mode, launch the configured runner, and report the result back to the issue.
+
+<div class="cq-grid cq-what-grid">
+  <div class="cq-card soft">
+    <h3>Durable work contract</h3>
+    <p>Keep task state in GitHub Issues and Projects, not in a mystery agent database or one chat thread nobody can audit later.</p>
+  </div>
+  <div class="cq-card soft">
+    <h3>Local scheduler</h3>
+    <p>CQ checks locks, limits, retries, branch state, and board status before it launches work on your own machine.</p>
+  </div>
+  <div class="cq-card soft">
+    <h3>Label-to-agent routing</h3>
+    <p>Map labels into modes like docs, review, implementation, research, or profile-specific workflows without hardcoding a giant orchestration stack.</p>
+  </div>
+  <div class="cq-card soft">
+    <h3>Results back to GitHub</h3>
+    <p>Agent output returns as comments, artifacts, branches, and PR links a human can review instead of trusting vibes.</p>
+  </div>
+</div>
+
+## How it works
+
+<div class="cq-card workflow-card">
+  <div class="cq-flow">
+    <span>GitHub Issue</span>
+    <b>→</b>
+    <span>CQ Scheduler</span>
+    <b>→</b>
+    <span>Agent Mode</span>
+    <b>→</b>
+    <span>Local Runner</span>
+    <b>→</b>
+    <span>Worklog / PR / Comment</span>
+  </div>
+</div>
+
+<div class="cq-steps">
+  <div><strong>1. Issue created</strong><br/>A task lands in GitHub Issues or Projects.</div>
+  <div><strong>2. Labels define intent</strong><br/>Labels map work to modes and safety policies.</div>
+  <div><strong>3. CQ picks eligible work</strong><br/>Scheduler checks status, locks, attempts, and policy.</div>
+  <div><strong>4. Runner executes locally</strong><br/>CQ launches OpenClaw, Codex, Claude Code, or another configured local runner.</div>
+  <div><strong>5. Results return to GitHub</strong><br/>Comments, artifacts, branches, PR links, and next steps are written back to the issue.</div>
+</div>
+
+## Built for your own projects and external contributions
+
+<div class="cq-grid cq-two-up">
+  <div class="cq-card project-card">
+    <h3>Operate your own project</h3>
+    <p>Run CQ against your own repos, boards, profiles, and worklog. Keep strategy, implementation, review, and ops in one GitHub-native loop.</p>
+  </div>
+  <div class="cq-card dark fork-card">
+    <h3>Contribute through a fork</h3>
+    <p>Use the same issue-driven flow for external repos: shape work into issues on your fork, dispatch locally, then open a clean upstream PR after review.</p>
+  </div>
+</div>
+
+## Why local-first
+
+<div class="cq-grid cq-why-grid">
+  <div class="cq-card mini"><h3>Private by default</h3><p>Secrets and runtime context stay on your machine.</p></div>
+  <div class="cq-card mini"><h3>No vendor lock-in</h3><p>Swap runners without losing the task contract.</p></div>
+  <div class="cq-card mini"><h3>Inspectable policy</h3><p>Routing and behavior live in markdown/config you can patch fast.</p></div>
+  <div class="cq-card mini"><h3>Reviewable output</h3><p>The final state still lives in GitHub where humans can judge it.</p></div>
+</div>
+
+## Minimal config shape
+
+```yaml
+projects:
+  - repo: your-org/your-repo
+    dispatch_statuses: [Todo]
+routing:
+  agent_roles:
+    cto: cto
+    cmo: cmo
+    reviewer: reviewer
+artifacts:
+  backend: local
+  path: .clawqueue/boards
+  commit: false
+```
+
+## Use cases
+
+<div class="cq-grid cq-use-cases">
+  <div class="cq-card mini"><h3>Personal repo autopilot</h3><p>Use GitHub issues as a real queue instead of a graveyard.</p></div>
+  <div class="cq-card mini"><h3>Startup engineering queue</h3><p>Route specs, fixes, docs, and reviews through one operator-controlled loop.</p></div>
+  <div class="cq-card mini"><h3>Open-source contribution assistant</h3><p>Work through your fork and ship cleaner upstream PRs.</p></div>
+  <div class="cq-card mini"><h3>Maintenance backlog sweeper</h3><p>Let boring but reviewable work move without losing visibility.</p></div>
+  <div class="cq-card mini"><h3>Multi-agent workbench</h3><p>Use labels and profiles to coordinate specialist roles without giant tooling overhead.</p></div>
+</div>
+
+## Small by design. GitHub-native by default.
+
+<div class="cq-grid cq-compare">
+  <div class="cq-card soft">
+    <h3>ClawQueue is</h3>
+    <ul>
+      <li>a local GitHub issue dispatcher</li>
+      <li>a way to turn labels into agent modes</li>
+      <li>a reviewable workflow for human-agent work</li>
+      <li>a small layer you can inspect and modify</li>
+    </ul>
+  </div>
+  <div class="cq-card soft">
+    <h3>ClawQueue is not</h3>
+    <ul>
+      <li>a hosted PM suite</li>
+      <li>a magical autonomous company in a box</li>
+      <li>a secure multi-tenant executor</li>
+      <li>a replacement for human review</li>
+    </ul>
+  </div>
+</div>
+
+<div class="cq-final-cta">
+  <h2>Put your GitHub issues to work. Locally.</h2>
+  <p>Start with the docs, wire up one board, and let CQ pick one safe issue at a time.</p>
+  <div class="actions">
+    <a class="action brand" href="/ClawQueue/start/getting-started">Get Started</a>
+    <a class="action alt" href="https://github.com/ClawQueue/ClawQueue">View GitHub</a>
+  </div>
+  <p class="cq-footer-line">ClawQueue — GitHub issues in, agent work out.</p>
+</div>
+
+</div>

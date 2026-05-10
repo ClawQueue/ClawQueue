@@ -1,0 +1,146 @@
+Copy-paste this prompt into your AI website builder:
+
+```text
+Create a polished landing page for ClawQueue, a local-first GitHub issue dispatcher for one operator and their AI agents.
+
+Use the attached selected-logo-reference.png as the core brand identity. The logo is a robotic lobster/claw mascot shaped like a C, with orange/red “claw” shell, dark navy mechanical/night-ops elements, cyan signal lights, and a queue/issue icon. Keep the page visually aligned with this: local-first, GitHub-native, operator-controlled, technical but approachable, night-ops devtool energy.
+
+Product explanation:
+ClawQueue keeps the durable work contract in GitHub Issues and GitHub Projects. A local scheduler picks eligible work, resolves issue labels into agent modes, launches the configured runner, and reports results back to the issue. It is intentionally small: GitHub is the control plane, the operator’s machine runs the workers, and policy stays in editable markdown/config.
+
+The page should target developers, technical founders, maintainers, and people building with AI coding agents.
+
+Use this primary headline:
+“Local GitHub issue dispatch for operator-controlled AI agents”
+
+Use this subheadline:
+“ClawQueue keeps GitHub Issues and Projects as the durable work contract, then uses a local scheduler to pick eligible work, launch the right agent mode, and report results back to the issue.”
+
+Primary CTA: Get Started
+Secondary CTA: View GitHub
+Also include: Read the docs
+
+Use these colors:
+- Lobster Orange #FF4A12
+- Lobster Red #E21B0C
+- Deep Navy #07162B
+- Ink Navy #0B1E3A
+- Cyan #12BFF5
+- Signal Blue #158BFF
+- Ice Blue #EAF7FF
+- Soft BG #F7FAFC
+- White #FFFFFF
+- Muted #64748B
+- Border #DDE7F0
+
+Use fonts:
+- Headings: Space Grotesk or Inter Tight
+- Body: Inter
+- Code: JetBrains Mono
+
+Page sections:
+1. Header with nav: How it works, Use cases, Config, Workflow, Docs, GitHub.
+2. Hero with logo/mascot, headline, subheadline, CTA buttons, and trust bullets: Local-first, GitHub-native, Markdown-configurable, PR-reviewable, Built for one operator + their agents.
+3. “GitHub is the control plane. Your machine runs the workers.” Feature cards:
+   - Durable work contract
+   - Local scheduler
+   - Label-to-agent routing
+   - Results back to GitHub
+4. “How it works” workflow diagram:
+   GitHub Issue → CQ Scheduler → Agent Mode → Local Runner → Worklog / PR / Comment
+5. “Built for your own projects and external contributions” with two mode cards:
+   - Operate your own project
+   - Contribute through a fork
+6. “Why local-first” section:
+   - Private by default
+   - No vendor lock-in
+   - Inspectable policy
+   - Reviewable output
+7. Config example code block using YAML.
+8. Use cases:
+   - Personal repo autopilot
+   - Startup engineering queue
+   - Open-source contribution assistant
+   - Maintenance backlog sweeper
+   - Multi-agent workbench
+9. Comparison section titled “Small by design. GitHub-native by default.” with a two-column “ClawQueue is / is not” table.
+10. Final dark CTA section:
+   “Put your GitHub issues to work. Locally.”
+   Buttons: Get Started, View GitHub.
+11. Footer with product/project links and line:
+   “ClawQueue — GitHub issues in, agent work out.”
+
+Style:
+Clean devtool SaaS landing page. Mostly white/light backgrounds, with one dark navy night-ops section. Rounded cards, soft shadows, subtle cyan signal details, orange CTAs. Use the mascot/logo prominently. Avoid generic stock art. Make it feel like a serious indie developer tool with a memorable mascot.
+
+If coding, create a responsive page. Use semantic HTML. Make sure mobile layout is excellent.
+```
+
+---
+
+## Recommended Hero Mockup Layout
+
+```text
+[Header]
+Logo left                                         Nav + CTA right
+
+[Hero]
+Left:
+  Badge: Local-first • GitHub-native • Agent-ready
+  H1
+  Subheadline
+  CTA buttons
+  Trust bullets
+
+Right:
+  Large mascot/logo
+  Floating cards:
+    issue #128
+    label: agent:bugfix
+    mode: fix
+    runner: local
+    PR opened
+```
+
+---
+
+## Tone of Voice
+
+Plainspoken, technical, and practical.
+
+Good phrases:
+- “Keep the contract in GitHub.”
+- “Run the workers locally.”
+- “Route labels into agent modes.”
+- “Operator-controlled by default.”
+- “Reviewable PRs, not mystery automation.”
+- “Small on purpose.”
+
+Avoid:
+- “Revolutionary”
+- “10x your engineering team”
+- “Autonomous AI employees”
+- “Magic”
+- “Enterprise-grade AI orchestration platform”
+
+---
+
+## Short Product Explanation
+
+ClawQueue is a tiny local dispatcher for GitHub issue-driven agent work. GitHub stays the source of truth. Your machine runs the workers. Markdown/config decides which labels map to which agent modes. Results come back to GitHub as comments, logs, branches, and PRs.
+
+---
+
+## Final Landing Page Taglines
+
+Use one of these:
+
+- GitHub issues in. Agent work out.
+- Keep the contract in GitHub. Run the workers locally.
+- Local dispatch for issue-driven agent work.
+- Small scheduler. Clear policy. Reviewable PRs.
+- Operator-controlled agent work, routed through GitHub.
+
+Recommended:
+
+> **Keep the contract in GitHub. Run the workers locally.**

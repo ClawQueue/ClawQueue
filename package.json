@@ -1,0 +1,16 @@
+{
+  "name": "clawqueue",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Local GitHub issue dispatch for operator-controlled AI agents.",
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "test": "python -m pytest -q"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  }
+}

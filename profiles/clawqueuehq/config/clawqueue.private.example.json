@@ -1,0 +1,63 @@
+{
+  "github": {
+    "assignee": "your-github-login"
+  },
+  "repositories": {
+    "primary": "your-org/clawqueue",
+    "extras": [
+      "your-org/product-repo",
+      "your-org/data-or-dashboard-repo"
+    ]
+  },
+  "routing": {
+    "mode_to_agent": {
+      "cto": "cto",
+      "cmo": "cmo",
+      "researcher": "researcher"
+    },
+    "agent_provider": {
+      "cto": "codex",
+      "cmo": "codex",
+      "researcher": "codex"
+    },
+    "agent_fallback": {
+      "cto": "ceo",
+      "cmo": "reviewer",
+      "researcher": "cto"
+    }
+  },
+  "notifications": {
+    "telegram_bot_token": "<telegram-bot-token>",
+    "telegram_chat_id": "<telegram-chat-id>"
+  },
+  "projects": {
+    "MT": {
+      "project_id": "<github-project-node-id>",
+      "field_id": "<github-project-status-field-id>",
+      "status_options": {
+        "todo": "<todo-option-id>",
+        "in_progress": "<in-progress-option-id>",
+        "done": "<done-option-id>"
+      }
+    },
+    "SSB": {
+      "project_id": "<github-project-node-id>",
+      "field_id": "<github-project-status-field-id>",
+      "status_options": {
+        "todo": "<todo-option-id>",
+        "in_progress": "<in-progress-option-id>",
+        "done": "<done-option-id>"
+      }
+    },
+    "WT": {
+      "project_id": "<github-project-node-id>",
+      "field_id": "<github-project-status-field-id>",
+      "status_options": {
+        "todo": "<todo-option-id>",
+        "in_progress": "<in-progress-option-id>",
+        "review": "<review-option-id>",
+        "done": "<done-option-id>"
+      }
+    }
+  }
+}

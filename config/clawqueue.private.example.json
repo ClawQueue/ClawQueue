@@ -1,0 +1,62 @@
+{
+  "github": {
+    "assignee": "your-github-login"
+  },
+  "repositories": {
+    "primary": "your-org/clawqueue",
+    "extras": [
+      "your-org/product-repo",
+      "your-org/growth-or-ops-repo"
+    ]
+  },
+  "routing": {
+    "mode_to_agent": {
+      "ceo": "ceo",
+      "cto": "cto",
+      "cmo": "cmo"
+    },
+    "agent_provider": {
+      "ceo": "codex",
+      "cto": "codex",
+      "cmo": "codex"
+    },
+    "agent_fallback": {
+      "cto": "ceo",
+      "cmo": "cto"
+    }
+  },
+  "notifications": {
+    "telegram_bot_token": "<telegram-bot-token>",
+    "telegram_chat_id": "<telegram-chat-id>"
+  },
+  "projects": {
+    "MT": {
+      "project_id": "<github-project-node-id>",
+      "field_id": "<github-project-status-field-id>",
+      "status_options": {
+        "todo": "<todo-option-id>",
+        "in_progress": "<in-progress-option-id>",
+        "done": "<done-option-id>"
+      }
+    },
+    "GROWTH": {
+      "project_id": "<github-project-node-id>",
+      "field_id": "<github-project-status-field-id>",
+      "status_options": {
+        "todo": "<todo-option-id>",
+        "in_progress": "<in-progress-option-id>",
+        "done": "<done-option-id>"
+      }
+    },
+    "DATA": {
+      "project_id": "<github-project-node-id>",
+      "field_id": "<github-project-status-field-id>",
+      "status_options": {
+        "todo": "<todo-option-id>",
+        "in_progress": "<in-progress-option-id>",
+        "review": "<review-option-id>",
+        "done": "<done-option-id>"
+      }
+    }
+  }
+}
