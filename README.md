@@ -610,8 +610,16 @@ Tracked files must not contain bot tokens, chat IDs, ProjectV2 node IDs, persona
 ---
 
 ## Design System
-ClawQueue ships a compact design system for the operator UI — deep navy, precise typography, and an amber accent for agent activity.
-Open [`index.html`](index.html) in a browser for the full design system hub — colors, typography, spacing, and all components.
+ClawQueue ships a compact docs/brand system: full horizontal logo, mascot hero art, deep navy workflow panels, orange/red claw-gradient CTAs, `Space Grotesk` headings, and `Inter` body copy.
+
+The current implementation lives in:
+
+- [`docs/.vitepress/theme/components/HomePage.vue`](docs/.vitepress/theme/components/HomePage.vue) — custom docs homepage
+- [`docs/.vitepress/theme/style.css`](docs/.vitepress/theme/style.css) — active VitePress theme tokens/components
+- [`docs/.vitepress/brand/README.md`](docs/.vitepress/brand/README.md) — design system root note and asset usage
+- [`docs/public/brand/`](docs/public/brand/) — public logo, mascot, favicon, CSS, and token assets
+
+Use `docs/public/brand/png/clawqueue-logo-full-horizontal.png` for the root README/header logo. Do not point docs at the old missing `docs/banner.svg`.
 
 ---
 
