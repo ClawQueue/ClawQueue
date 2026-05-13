@@ -44,11 +44,14 @@ class ProgressTests(unittest.TestCase):
             repo="owner/repo",
             issue=7,
             title="Task",
+            command="diagnose",
             details=["Diagnosis requested with `/cq diagnose`"],
         )
 
-        self.assertIn("CQ command result: diagnosed", body)
+        self.assertIn("CQ diagnose command", body)
         self.assertIn("Diagnosis requested", body)
+        self.assertNotIn("Issue:", body)
+        self.assertNotIn("Title:", body)
         self.assertNotIn("<!-- clawqueue:progress -->", body)
 
     def test_historical_retry_with_command_result_is_not_replayed(self) -> None:
@@ -58,7 +61,7 @@ class ProgressTests(unittest.TestCase):
 
         comments = [
             {"id": 101, "body": "/cq retry"},
-            {"id": 102, "body": "### CQ command result: queued\n\nAlready handled."},
+            {"id": 102, "body": "### CQ retry command\n\n- Queued for retry."},
         ]
 
         class Tracker:

@@ -682,7 +682,10 @@ class ClawQueueDispatcher:
 
     @staticmethod
     def is_command_result_comment(body: str) -> bool:
-        return body.lstrip().startswith("### CQ command result:")
+        stripped = body.lstrip()
+        return stripped.startswith("### CQ command result:") or (
+            stripped.startswith("### CQ ") and " command" in stripped.splitlines()[0]
+        )
 
     @classmethod
     def command_already_acknowledged(cls, comments: list, command_index: int) -> bool:
@@ -745,6 +748,7 @@ class ClawQueueDispatcher:
                     repo=repo,
                     issue=number,
                     title=title,
+                    command="diagnose" if command == "diagnose" else "status",
                     details=details,
                 ),
             )
@@ -763,7 +767,8 @@ class ClawQueueDispatcher:
                     repo=repo,
                     issue=number,
                     title=title,
-                    details=["Paused by `/cq pause`. Use `/cq retry` or remove `cq:paused` to resume."],
+                    command="pause",
+                    details=["Paused. Use `/cq retry` to resume."],
                 ),
             )
             self.log_decision("command", "/cq pause", extra={"repo": repo, "issue": number})
@@ -786,11 +791,8 @@ class ClawQueueDispatcher:
                     repo=repo,
                     issue=number,
                     title=title,
-                    details=[
-                        "Retry requested with `/cq retry`; paused/failed labels and local attempt count were cleared.",
-                        "The issue was reopened so the scheduler can pick it up again.",
-                        "The next worker run will re-read the issue body, all non-CQ comments, dependency artifacts, and board guidance before producing the next artifact.",
-                    ],
+                    command="retry",
+                    details=["Queued for retry."],
                 ),
             )
             self.log_decision("command", "/cq retry", extra={"repo": repo, "issue": number})
@@ -808,7 +810,8 @@ class ClawQueueDispatcher:
                     repo=repo,
                     issue=number,
                     title=title,
-                    details=["Queued by `/cq run`; scheduler will pick it when guards allow."],
+                    command="run",
+                    details=["Queued."],
                 ),
             )
             self.log_decision("command", "/cq run", extra={"repo": repo, "issue": number})
@@ -822,23 +825,27 @@ class ClawQueueDispatcher:
                 repo=repo,
                 issue=number,
                 title=title,
-                details=[f"Unknown command `/cq {command}`. Supported: diagnose, run, retry, pause."],
+                command=command,
+                details=["Unknown command. Supported: `/cq diagnose`, `/cq run`, `/cq retry`, `/cq pause`."],
             ),
         )
         self.log_decision("command", f"unknown /cq {command}", extra={"repo": repo, "issue": number})
 
-    def command_comment_body(self, *, status: str, repo: str, issue: int, title: str, details: list[str] | None = None) -> str:
-        lines = [
-            f"### CQ command result: {status}",
-            "",
-            f"Issue: `{repo}#{issue}`",
-            f"Title: {title}",
-            "",
-        ]
+    def command_comment_body(
+        self,
+        *,
+        status: str,
+        repo: str,
+        issue: int,
+        title: str,
+        command: str | None = None,
+        details: list[str] | None = None,
+    ) -> str:
+        command_label = (command or status).strip().lower().replace("_", "-")
+        lines = [f"### CQ {command_label} command", ""]
         for detail in details or []:
             lines.append(f"- {detail}")
-        lines.extend(["", "_Command response by ClawQueue. History is append-only; worker progress uses the managed status comment._"])
-        return "\n".join(lines)
+        return "\n".join(lines).rstrip()
 
     def diagnose_issue(self, repo: str, number: int, title: str, labels: list[str]) -> tuple[str, list[str]]:
         key = self.attempt_count_key(repo, number)
