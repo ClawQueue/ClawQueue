@@ -23,7 +23,7 @@ features:
   - title: Durable work contract
     details: Issues, labels, projects, comments, branches, and PRs stay visible in GitHub instead of disappearing into a hidden runtime.
   - title: Local scheduler
-    details: Your machine picks eligible issues, applies policy, and launches the configured local runner.
+    details: Your machine picks eligible issues, applies policy, and launches the configured runner — usually OpenClaw for full agent context, or direct CLI backends when configured.
   - title: Label-to-agent routing
     details: Turn labels into modes like docs, review, implementation, research, and project-specific operator flows.
   - title: Reviewable output
@@ -39,9 +39,9 @@ features:
 <div class="cq-signal-row" aria-label="trust bullets">
   <span>Local-first</span>
   <span>GitHub-native</span>
+  <span>Powered by OpenClaw</span>
   <span>Markdown-configurable</span>
   <span>PR-reviewable</span>
-  <span>Built for one operator + their agents</span>
 </div>
 
 <div class="cq-mascot-cards">
@@ -55,6 +55,8 @@ features:
 ## GitHub is the durable work contract. Your machine runs the workers.
 
 ClawQueue keeps source-of-truth work in GitHub Issues and Projects, then uses a local scheduler to pick eligible work, resolve labels into the right mode, launch the configured runner, and report the result back to the issue.
+
+OpenClaw supplies the context-rich assistant layer: a human can ask the OpenClaw main agent for help in plain language, and OpenClaw can use project context to turn that rough prompt into a full GitHub issue. With the default `openclaw` backend, it can also run the specialist agents CQ dispatches.
 
 <div class="cq-grid cq-what-grid">
   <div class="cq-card soft">
@@ -79,24 +81,29 @@ ClawQueue keeps source-of-truth work in GitHub Issues and Projects, then uses a 
 
 <div class="cq-card workflow-card">
   <div class="cq-flow">
-    <span>GitHub Issue</span>
+    <span>Human Prompt</span>
+    <b>→</b>
+    <span>OpenClaw Main Agent</span>
+    <b>→</b>
+    <span>Full GitHub Issue</span>
     <b>→</b>
     <span>CQ Scheduler</span>
     <b>→</b>
-    <span>Agent Mode</span>
+    <span>Mode + Policy</span>
     <b>→</b>
-    <span>Local Runner</span>
+    <span>OpenClaw / Local Runner</span>
     <b>→</b>
     <span>Worklog / PR / Comment</span>
   </div>
 </div>
 
 <div class="cq-steps">
-  <div><strong>1. Issue created</strong><br/>A task lands in GitHub Issues or Projects.</div>
-  <div><strong>2. Labels define intent</strong><br/>Labels map work to modes and safety policies.</div>
-  <div><strong>3. CQ picks eligible work</strong><br/>Scheduler checks status, locks, attempts, and policy.</div>
-  <div><strong>4. Runner executes locally</strong><br/>CQ launches OpenClaw, Codex, Claude Code, or another configured local runner.</div>
-  <div><strong>5. Results return to GitHub</strong><br/>Comments, artifacts, branches, PR links, and next steps are written back to the issue.</div>
+  <div><strong>1. Human asks OpenClaw</strong><br/>Start with a rough operator prompt, question, or desired outcome.</div>
+  <div><strong>2. OpenClaw creates the issue</strong><br/>The main agent uses repo/profile context to turn the prompt into a scoped GitHub issue with the details CQ needs.</div>
+  <div><strong>3. Labels define intent</strong><br/>Labels map work to modes and safety policies.</div>
+  <div><strong>4. CQ picks eligible work</strong><br/>Scheduler checks status, locks, attempts, and policy.</div>
+  <div><strong>5. OpenClaw or another runner executes locally</strong><br/>CQ usually launches an OpenClaw specialist agent; direct Codex or Claude Code runners can be configured when that is the approved path.</div>
+  <div><strong>6. Results return to GitHub</strong><br/>Comments, artifacts, branches, PR links, and next steps are written back to the issue.</div>
 </div>
 
 ## Built for your own projects and external contributions

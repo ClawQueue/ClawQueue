@@ -17,7 +17,7 @@
 
 ClawQueue (CQ) is a **local human-agent workflow engine for GitHub**.
 
-Combined with OpenClaw, CQ helps turn project context and operator intent into durable GitHub issues, then dispatches local agents to execute, report, and improve the work through reviewable GitHub history.
+Powered by OpenClaw for context-rich intake and, when configured, agent execution, CQ turns project context and operator intent into durable GitHub issues, then dispatches local workers to execute, report, and improve the work through reviewable GitHub history.
 
 CQ is intentionally small: **GitHub holds the durable work contract, OpenClaw helps shape the work, your machine runs the workers, and policy stays in markdown/config you can edit while using it.**
 
@@ -35,7 +35,7 @@ CQ works in two very practical modes:
 | **What is it?** | A local control loop that turns project context and human intent into GitHub issues, agent execution, artifacts, and PR-ready outcomes |
 | **Where does work live?** | GitHub issues, boards, labels, comments, artifacts, and review history |
 | **Where does context live?** | In OpenClaw/profile workspaces, markdown policy, local config, and issue history |
-| **What runs work?** | OpenClaw agents, Claude Code, or Codex backends |
+| **What runs work?** | CQ’s local scheduler launches the configured backend: OpenClaw agents by default/full-harness, or Claude Code/Codex direct CLI runners |
 | **Who is it for?** | A trusted operator or small team that wants GitHub-native agent work without a hosted PM layer |
 | **What is it not?** | A SaaS workflow product, public bot, secure multi-tenant executor, or fake “AI company OS” |
 
@@ -94,6 +94,8 @@ flowchart LR
     J --> K
     K --> L[Human review in GitHub]
 ```
+
+In this model, the human operator can ask OpenClaw for help in plain language; OpenClaw uses project context to shape that rough intent into a full GitHub issue, and ClawQueue provides the GitHub-native queue, scheduler, policy, and reporting loop that carries the issue through execution and review.
 
 The intended operating loop is:
 
@@ -203,7 +205,7 @@ GitHub issue in Todo
   → reopened Review issue is eligible for a reviewer/revision agent
 ```
 
-ClawQueue decides **which issue** gets picked and **which backend** launches it. OpenClaw is usually upstream as the context-rich intake/chief-of-staff layer; when using the `openclaw` backend, it is also the runtime that launches the named specialist agent. With `claudecode` or `codex`, the runner passes the full task prompt directly to that CLI.
+ClawQueue decides **which issue** gets picked, **which policy applies**, and **which backend** launches it. OpenClaw is usually upstream as the context-rich intake/chief-of-staff layer; when using the `openclaw` backend, it is also the runtime that launches the named specialist agent. With `claudecode` or `codex`, CQ passes the full task prompt directly to that CLI instead.
 
 An issue is eligible when it is **open, unassigned, on a configured board status listed in that project’s `dispatch_statuses` policy**, under the attempt cap, and not blocked by locks, throttles, activity gates, or quota guards. The default policy is `Todo` only.
 
