@@ -70,7 +70,8 @@
 .cq-kicker.cyan .dot{background:#5BE0FF;box-shadow:0 0 0 4px rgba(30,198,255,.25)}
 .cq-hero h1{font-family:'Outfit',Inter,sans-serif;font-size:clamp(2.4rem,5vw,4.4rem);font-weight:800;letter-spacing:-.035em;line-height:1.02;margin:0 0 22px}
 .cq-hero h1 em{font-style:normal;background:var(--cq-grad-claw);-webkit-background-clip:text;background-clip:text;color:transparent}
-.cq-hero p.lede{font-size:1.18rem;line-height:1.65;color:var(--cq-muted);max-width:60ch;margin:0 0 28px}
+.cq-hero p.lede{font-size:1.18rem;line-height:1.65;color:var(--cq-muted);max-width:60ch;margin:0 0 18px}
+.cq-hero p.lede.secondary{font-size:1rem;margin-bottom:28px}
 .cq-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
 .cq-pill{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--cq-fg);background:#fff;border:1px solid var(--cq-border);padding:7px 12px;border-radius:999px}
 .cq-pill .glyph{color:var(--cq-claw);font-weight:800;margin-right:6px}
@@ -90,7 +91,7 @@
 .cq-float.f4{bottom:2%;right:6%;animation-delay:3.2s}
 @keyframes cq-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 
-.cq-proof{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:6px 0 56px}
+.cq-proof{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;padding:6px 0 56px}
 .cq-proof-card{background:#fff;border:1px solid var(--cq-border);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--cq-shadow-sm);transition:transform .2s,box-shadow .2s}
 .cq-proof-card:hover{transform:translateY(-3px);box-shadow:var(--cq-shadow)}
 .cq-proof-card .num{font-family:'Outfit',Inter,sans-serif;font-weight:800;font-size:28px;color:var(--cq-claw);letter-spacing:-.02em}
@@ -108,7 +109,7 @@
 .cq-night .cq-section-head h2{color:#fff}
 .cq-night .cq-section-head p{color:var(--cq-night-muted)}
 
-.cq-flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;margin-top:8px}
+.cq-flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-top:8px}
 .cq-flow-step{position:relative;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px 16px;display:flex;flex-direction:column;gap:8px}
 .cq-flow-step .num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:#5BE0FF}
 .cq-flow-step .t{font-family:'Outfit',Inter,sans-serif;font-weight:700;font-size:1.02rem;color:#fff;line-height:1.15}

@@ -19,6 +19,46 @@ hero:
       text: Read the docs
       link: /guide/operator-workflow
 
+
+signals:
+  - Local-first
+  - GitHub-native
+  - Powered by OpenClaw
+  - Markdown-configurable
+  - PR-reviewable
+
+homepage:
+  lede: >-
+    ClawQueue keeps GitHub Issues and Projects as the durable work contract, then uses a local scheduler to pick eligible work, launch the right agent mode, and report results back to the issue.
+  relationship: >-
+    OpenClaw supplies the context-rich assistant layer: a human can ask the OpenClaw main agent for help in plain language, and OpenClaw can use project context to turn that rough prompt into a full GitHub issue. With the default `openclaw` backend, it can also run the specialist agents CQ dispatches.
+  proof:
+    - title: GitHub holds the contract
+      details: Issues, labels, projects, comments, branches, PRs.
+    - title: OpenClaw shapes the issue
+      details: Rough operator prompts become scoped GitHub work with project context.
+    - title: Your machine runs the workers
+      details: OpenClaw, Claude Code, Codex, or other local runners.
+    - title: Humans review the work
+      details: Output returns as comments, artifacts, and PR-ready changes.
+  how:
+    title: Prompt-to-issue-to-agent work — without losing the thread
+    description: >-
+      OpenClaw can turn rough operator intent into a scoped GitHub issue, then CQ schedules one eligible issue, runs a configured local backend, and writes the result back where humans can audit it.
+    steps:
+      - title: Human Prompt
+        details: Start with a rough operator prompt, question, or desired outcome.
+      - title: OpenClaw Main Agent
+        details: OpenClaw uses repo/profile context to shape the request.
+      - title: Full GitHub Issue
+        details: The prompt becomes a scoped issue with the details CQ needs.
+      - title: CQ Scheduler
+        details: CQ checks status, locks, attempts and policy.
+      - title: OpenClaw / Local Runner
+        details: CQ launches an OpenClaw specialist agent or another configured backend.
+      - title: Comment / PR
+        details: Result returns to the issue, ready to review.
+
 features:
   - title: Durable work contract
     details: Issues, labels, projects, comments, branches, and PRs stay visible in GitHub instead of disappearing into a hidden runtime.
