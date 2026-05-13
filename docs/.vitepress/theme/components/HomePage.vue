@@ -1,9 +1,40 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useData } from 'vitepress'
+
+type HomepageCard = { title: string; details: string }
+
 const base = import.meta.env.BASE_URL
 const a = (p: string) => `${base}${p}`
 const icon = a('brand/png/clawqueue-icon-with-queue.png')
 const mascot = a('brand/png/clawqueue-icon-with-queue.png')
-const fullLogo = a('brand/png/clawqueue-logo-full-horizontal.png')
+
+const { frontmatter } = useData()
+const homepage = computed(() => frontmatter.value.homepage ?? {})
+const signals = computed<string[]>(() => frontmatter.value.signals ?? [
+  'Local-first',
+  'GitHub-native',
+  'Markdown-configurable',
+  'PR-reviewable'
+])
+const lede = computed(() => homepage.value.lede ?? 'ClawQueue keeps GitHub Issues and Projects as the durable work contract, then uses a local scheduler to pick eligible work, launch the right agent mode, and report results back to the issue.')
+const relationship = computed(() => homepage.value.relationship ?? '')
+const proof = computed<HomepageCard[]>(() => homepage.value.proof ?? [
+  { title: 'GitHub holds the contract', details: 'Issues, labels, projects, comments, branches, PRs.' },
+  { title: 'Your machine runs the workers', details: 'OpenClaw, Claude Code, Codex, or other local runners.' },
+  { title: 'Humans review the work', details: 'Output returns as comments, artifacts, and PR-ready changes.' }
+])
+const how = computed(() => homepage.value.how ?? {})
+const howTitle = computed(() => how.value.title ?? 'Issue-driven agent work — without losing the thread')
+const howDescription = computed(() => how.value.description ?? 'Every tick of the scheduler resolves a single eligible issue, runs a configured local backend, and writes the result back where humans can audit it.')
+const howSteps = computed<HomepageCard[]>(() => how.value.steps ?? [
+  { title: 'Issue', details: 'A task lands in GitHub Issues or Projects.' },
+  { title: 'Scheduler', details: 'CQ checks status, locks, attempts and policy.' },
+  { title: 'Agent Mode', details: 'Labels resolve to the right mode + role.' },
+  { title: 'Local Runner', details: 'OpenClaw, Codex, Claude Code — your choice.' },
+  { title: 'Comment / PR', details: 'Result returns to the issue, ready to review.' }
+])
+const twoDigit = (n: number) => String(n + 1).padStart(2, '0')
 </script>
 
 <template>
@@ -29,20 +60,14 @@ const fullLogo = a('brand/png/clawqueue-logo-full-horizontal.png')
       <div>
         <span class="cq-kicker"><span class="dot"></span>GitHub issues in · agent work out</span>
         <h1>Turn GitHub Issues into a <em>local agent queue</em>.</h1>
-        <p class="lede">
-          ClawQueue keeps GitHub Issues and Projects as the durable work contract,
-          then uses a local scheduler to pick eligible work, launch the right
-          agent mode, and report results back to the issue.
-        </p>
+        <p class="lede">{{ lede }}</p>
+        <p v-if="relationship" class="lede secondary">{{ relationship }}</p>
         <div class="cq-actions">
           <a class="cq-btn primary" href="/ClawQueue/start/getting-started">Get Started</a>
           <a class="cq-btn secondary" href="/ClawQueue/guide/operator-workflow">Read the Docs</a>
         </div>
         <div class="cq-pills">
-          <span class="cq-pill"><span class="glyph">●</span>Local-first</span>
-          <span class="cq-pill"><span class="glyph">●</span>GitHub-native</span>
-          <span class="cq-pill"><span class="glyph">●</span>Markdown-configurable</span>
-          <span class="cq-pill"><span class="glyph">●</span>PR-reviewable</span>
+          <span v-for="signal in signals" :key="signal" class="cq-pill"><span class="glyph">●</span>{{ signal }}</span>
         </div>
       </div>
       <div class="cq-hero-art">
@@ -71,20 +96,10 @@ const fullLogo = a('brand/png/clawqueue-logo-full-horizontal.png')
 
     <section class="cq-wrap">
       <div class="cq-proof">
-        <div class="cq-proof-card">
-          <span class="num">01</span>
-          <strong>GitHub holds the contract</strong>
-          <span>Issues, labels, projects, comments, branches, PRs.</span>
-        </div>
-        <div class="cq-proof-card">
-          <span class="num">02</span>
-          <strong>Your machine runs the workers</strong>
-          <span>OpenClaw, Claude Code, Codex, or other local runners.</span>
-        </div>
-        <div class="cq-proof-card">
-          <span class="num">03</span>
-          <strong>Humans review the work</strong>
-          <span>Output returns as comments, artifacts, and PR-ready changes.</span>
+        <div v-for="(card, index) in proof" :key="card.title" class="cq-proof-card">
+          <span class="num">{{ twoDigit(index) }}</span>
+          <strong>{{ card.title }}</strong>
+          <span>{{ card.details }}</span>
         </div>
       </div>
     </section>
@@ -93,15 +108,11 @@ const fullLogo = a('brand/png/clawqueue-logo-full-horizontal.png')
       <div class="cq-night">
         <div class="cq-section-head">
           <span class="cq-kicker cyan"><span class="dot"></span>How it works</span>
-          <h2>Issue-driven agent work — without losing the thread</h2>
-          <p>Every tick of the scheduler resolves a single eligible issue, runs a configured local backend, and writes the result back where humans can audit it.</p>
+          <h2>{{ howTitle }}</h2>
+          <p>{{ howDescription }}</p>
         </div>
         <div class="cq-flow">
-          <div class="cq-flow-step"><span class="num">01</span><span class="t">Issue</span><span class="d">A task lands in GitHub Issues or Projects.</span></div>
-          <div class="cq-flow-step"><span class="num">02</span><span class="t">Scheduler</span><span class="d">CQ checks status, locks, attempts and policy.</span></div>
-          <div class="cq-flow-step"><span class="num">03</span><span class="t">Agent Mode</span><span class="d">Labels resolve to the right mode + role.</span></div>
-          <div class="cq-flow-step"><span class="num">04</span><span class="t">Local Runner</span><span class="d">OpenClaw, Codex, Claude Code — your choice.</span></div>
-          <div class="cq-flow-step"><span class="num">05</span><span class="t">Comment / PR</span><span class="d">Result returns to the issue, ready to review.</span></div>
+          <div v-for="(step, index) in howSteps" :key="step.title" class="cq-flow-step"><span class="num">{{ twoDigit(index) }}</span><span class="t">{{ step.title }}</span><span class="d">{{ step.details }}</span></div>
         </div>
         <pre class="cq-terminal"><code><span class="prompt">$</span> <span class="cmd">python3 scripts/scheduler.py</span>
 <span class="dim">[</span><span class="key">pick</span><span class="dim">]</span> eligible issue in <span class="ok">Todo</span>
