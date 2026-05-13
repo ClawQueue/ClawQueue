@@ -136,6 +136,24 @@ class FakeTracker:
 
 
 class DispatcherReviewSweepTests(unittest.TestCase):
+    def test_maybe_close_completed_issue_leaves_review_open(self) -> None:
+        dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+        dispatcher.config = SimpleNamespace(reviewer_auto_closes_issue=True)
+        dispatcher.tracker = FakeTracker()
+
+        dispatcher.maybe_close_completed_issue("ExampleOrg/ExampleRepo", 1, "review", "done")
+
+        self.assertEqual(dispatcher.tracker.closed, [])
+
+    def test_maybe_close_completed_issue_closes_done(self) -> None:
+        dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+        dispatcher.config = SimpleNamespace(reviewer_auto_closes_issue=True)
+        dispatcher.tracker = FakeTracker()
+
+        dispatcher.maybe_close_completed_issue("ExampleOrg/ExampleRepo", 1, "done", "done")
+
+        self.assertEqual(dispatcher.tracker.closed, [("ExampleOrg/ExampleRepo", 1, "completed")])
+
     def test_finalize_completed_reviews_leaves_review_for_human_done(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)

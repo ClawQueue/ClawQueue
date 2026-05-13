@@ -1050,7 +1050,10 @@ class ClawQueueDispatcher:
     def maybe_close_completed_issue(self, repo: str, number: int, status_key: str, result_status: str = "done") -> None:
         if not self.config.reviewer_auto_closes_issue:
             return
-        if result_status != "done" or status_key not in {"review", "done"}:
+        # Review means waiting for human/operator acceptance. Do not close the
+        # GitHub issue here: a later closed-issue cleanup pass treats closed
+        # issues as Done, which skips the intended review/retry window.
+        if result_status != "done" or status_key != "done":
             return
         if self.tracker.get_issue_state(repo, number) == "CLOSED":
             return
