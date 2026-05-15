@@ -13,7 +13,7 @@ All modes inherit `COMPANY_CHARTER.md`. They support ExampleCo SaaS work across 
 | `engineer` | `dev` | gpt-5.5 (Codex) | `engineer.md` | Scoped implementation across code, automation, docs, and drafts |
 | `cmo` | `cmo` | gpt-5.5 (Codex) | `cmo.md` | Growth, demand, sales, marketing, social, partnerships, and customer evidence |
 | `researcher` | `researcher` | gpt-5.5 (Codex) | `researcher.md` | PhD SaaS product research, weather science, experiment verification, product/data quality |
-| `reviewer` | `reviewer` | gpt-5.5 (Codex) | `reviewer.md` | Code, plan, claim, brand-risk, security, and approval-boundary review |
+| `reviewer` | `reviewer` | gpt-5.5 (Codex) | `reviewer.md` | Code, plan, claim, brand-risk, security, approval-boundary, and Codex-review gate for code deliverables |
 
 **Priority order when multiple labels are present:** `ceo > cto > reviewer > cmo > researcher > engineer`
 
@@ -51,7 +51,7 @@ OpenClaw agents are typically configured under `$OPENCLAW_HOME/agents/`:
 - **`dev`** - implementation
 - **`cmo`** - growth, demand, narrative, customer evidence, sales/marketing/social
 - **`researcher`** - SaaS product research, weather science, experiment verification, product/data quality
-- **`reviewer`** - risk, correctness, claims, and approval boundaries
+- **`reviewer`** - risk, correctness, claims, approval boundaries, and advisory Codex review for code deliverables
 
 ## Local mode resolution
 
