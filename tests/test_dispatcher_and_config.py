@@ -75,6 +75,42 @@ class DispatcherCompletionTests(unittest.TestCase):
         self.assertFalse(ClawQueueDispatcher.has_retry_after_latest_completion(comments))
         self.assertEqual(dispatcher.completed_status_key("owner/repo", 7, {"labels": [], "comments": comments}), "review")
 
+    def test_change_completion_routes_to_review_when_review_column_exists(self) -> None:
+        done = f"<!-- clawqueue:result -->\n```json\n{{\"status\":\"done\",\"needs_review\":true}}\n```\n{COMPLETION_SENTINEL}"
+        dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+        dispatcher.tracker = SimpleNamespace(
+            build_board_cache=lambda: {"owner/repo:8": {"project": "P", "status": "In Progress"}},
+            cache_key=lambda repo, number: f"{repo}:{number}",
+        )
+        dispatcher.config = SimpleNamespace(projects={"P": SimpleNamespace(status_options={"review": "review-id"})})
+
+        self.assertEqual(
+            dispatcher.completed_status_key(
+                "owner/repo",
+                8,
+                {"labels": [{"name": "cq:change"}], "comments": [{"body": done}]},
+            ),
+            "review",
+        )
+
+    def test_review_completion_with_no_followup_review_routes_to_done(self) -> None:
+        done = f"<!-- clawqueue:result -->\n```json\n{{\"status\":\"done\",\"needs_review\":false}}\n```\n{COMPLETION_SENTINEL}"
+        dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+        dispatcher.tracker = SimpleNamespace(
+            build_board_cache=lambda: {"owner/repo:9": {"project": "P", "status": "Review"}},
+            cache_key=lambda repo, number: f"{repo}:{number}",
+        )
+        dispatcher.config = SimpleNamespace(projects={"P": SimpleNamespace(status_options={"review": "review-id"})})
+
+        self.assertEqual(
+            dispatcher.completed_status_key(
+                "owner/repo",
+                9,
+                {"labels": [{"name": "cq:change"}], "comments": [{"body": done}]},
+            ),
+            "done",
+        )
+
     def test_dependency_numbers_are_parsed_from_issue_body(self) -> None:
         body = """
         ## Dependencies
@@ -169,6 +205,21 @@ class DispatcherReviewSweepTests(unittest.TestCase):
 
 
 class ConfigTests(unittest.TestCase):
+    def test_default_policy_maps_reviewer_role(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            from clawqueue.config import DEFAULT_POLICY_FILE
+
+            with patched_env(
+                {
+                    "CLAWQUEUE_POLICY_FILE": str(DEFAULT_POLICY_FILE),
+                    "CLAWQUEUE_PRIVATE_CONFIG_FILE": str(Path(tmp) / "missing.json"),
+                    "CLAWQUEUE_STATE_DIR": str(Path(tmp) / "state"),
+                }
+            ):
+                config = load_config()
+
+        self.assertEqual(config.resolve_agent_candidates("reviewer"), ("reviewer",))
+
     def test_provider_names_and_new_policy_keys_are_normalized(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             policy = Path(tmp) / "policy.md"

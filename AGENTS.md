@@ -179,8 +179,8 @@ These categories describe the task. They do not replace routing labels unless th
 3. The dispatcher skips work when a lock, active worker, throttle, attempt cap, activity gate, or quota guard says to wait.
 4. The selected issue is assigned, moved to `In Progress`, and launched through the configured OpenClaw agent.
 5. The worker comments completion and exits.
-6. Sweep logic moves stale completed implementation work to `Review` where configured, or back to `Todo` when orphaned.
-7. Review behavior is profile policy: by default Review is a human/operator lane unless a deployment explicitly includes it in `dispatch_statuses` or queues a separate `Todo` review issue.
+6. Sweep logic moves completed `cq:change` / implementation work to `Review` where configured, or back to `Todo` when orphaned.
+7. Review behavior is profile policy: Review is a human/operator lane unless a deployment includes `Review` in `dispatch_statuses`. When enabled, the `reviewer` agent reviews open Review issues and a passing result with `needs_review=false` moves the item to `Done`.
 
 ## Project Boards
 

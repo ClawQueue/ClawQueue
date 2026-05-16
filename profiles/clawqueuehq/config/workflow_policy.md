@@ -32,6 +32,14 @@
       "engineer": "dev",
       "reviewer": "reviewer"
     },
+    "agent_roles": {
+      "ceo": ["manobot-ceo"],
+      "cto": ["manobot-cto"],
+      "cmo": ["manobot-cmo"],
+      "dev": ["main"],
+      "engineer": ["main"],
+      "reviewer": ["manobot-reviewer"]
+    },
     "agent_provider": {
       "ceo": "codex",
       "cto": "codex",
@@ -122,7 +130,7 @@
         "done": "98236657",
         "blocked": "07da76d1"
       },
-      "dispatch_statuses": ["Todo"]
+      "dispatch_statuses": ["Todo", "Review"]
     },
     "GROWTH": {
       "number": 2,
