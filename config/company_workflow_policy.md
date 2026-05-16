@@ -100,6 +100,11 @@
   "github": {
     "reviewer_auto_closes_issue": true
   },
+  "review": {
+    "default_level": "standard",
+    "levels": ["standard", "extra"],
+    "extra_review_required": false
+  },
   "projects": {
     "MT": {
       "number": 1,
@@ -173,7 +178,9 @@ Default dispatch remains `Todo` only until a project has real board IDs/status o
 1. implementation agent completes the source/content/config/docs change
 2. CQ moves the issue to `Review`
 3. reviewer agent picks the open `Review` issue
-4. if the reviewer posts `status=done` with `needs_review=false`, CQ moves the project item to `Done`
+4. if the reviewer posts `status=done` with `extra_review_required=false`, CQ moves the project item to `Done`
+
+The chief-of-staff/intake agent should set `review_level: standard | extra` in the issue body when creating the issue. Use `standard` for ordinary scoped changes and `extra` for high-risk, broad, security-sensitive, public-facing, or hard-to-verify changes. `extra_review_required` is a result field: set it to `true` only when another stronger review pass is still required before acceptance. Older `needs_review` result fields remain accepted as a compatibility alias, but new docs and profiles should prefer `extra_review_required`.
 
 If `Review` is not configured for dispatch, Review remains a human/operator lane.
 

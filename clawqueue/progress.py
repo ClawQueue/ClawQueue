@@ -12,7 +12,8 @@ DEFAULT_RESULT = {
     "status": "done",
     "summary": "",
     "files_changed": [],
-    "needs_review": False,
+    "review_level": "standard",
+    "extra_review_required": False,
 }
 
 
@@ -40,7 +41,8 @@ def result_contract_text(issue: int, repo: str) -> str:
         "status": "done",
         "summary": "Brief operator-facing summary.",
         "files_changed": ["relative/path-or-artifact-url"],
-        "needs_review": True,
+        "review_level": "standard",
+        "extra_review_required": False,
     }
     return (
         "When finished, post exactly one completion comment. Start with a short, friendly "
@@ -79,9 +81,21 @@ def extract_result(comment_body: str) -> Optional[dict[str, Any]]:
     files_changed = data.get("files_changed", [])
     if not isinstance(files_changed, list):
         files_changed = []
+    review_level = str(data.get("review_level", "standard")).strip().lower()
+    if review_level not in {"standard", "extra"}:
+        review_level = "standard"
+    extra_review_required = bool(
+        data.get(
+            "extra_review_required",
+            data.get("needs_review", status in {"done", "needs_review"}),
+        )
+    )
     return {
         "status": status,
         "summary": summary,
         "files_changed": [str(item) for item in files_changed],
-        "needs_review": bool(data.get("needs_review", status in {"done", "needs_review"})),
+        "review_level": review_level,
+        "extra_review_required": extra_review_required,
+        # Backward-compatible alias for older CQ result comments and callers.
+        "needs_review": extra_review_required,
     }

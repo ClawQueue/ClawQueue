@@ -165,7 +165,8 @@ class AgentRunner:
                 "Treat Codex review findings as advisory, not automatic truth: verify each accepted finding against the real code path, reject noisy/speculative findings with a one-line reason, apply only small task-scoped fixes when appropriate, and rerun focused tests plus Codex review after any review-triggered code change.\n"
                 "For non-code reports, plans, and research artifacts, do not run Codex review just for ceremony; review the evidence, claims, and approval gaps directly.\n\n"
                 "Do not close the issue or move board status directly. CQ will apply the result.\n"
-                "If review passes, use status `done` and `needs_review: false`. "
+                "If review passes, use status `done`, `review_level: standard` unless the issue explicitly required extra review, and `extra_review_required: false`. "
+                "If the change still needs another stronger pass, use `review_level: extra` and `extra_review_required: true`. "
                 "If review fails, use status `failed` or `blocked` with a clear summary.\n\n"
                 + result_contract_text(task.number, task.repo)
             )

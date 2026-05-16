@@ -111,6 +111,11 @@
     "assignee": "your-github-login",
     "reviewer_auto_closes_issue": true
   },
+  "review": {
+    "default_level": "standard",
+    "levels": ["standard", "extra"],
+    "extra_review_required": false
+  },
   "safety": {
     "change_author_allowlist": [
       "your-github-login"
