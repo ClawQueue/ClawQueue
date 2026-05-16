@@ -28,6 +28,15 @@
     "analyst_modes": [
       "researcher"
     ],
+    "agent_roles": {
+      "ceo": ["ceo"],
+      "cto": ["cto"],
+      "cmo": ["cmo"],
+      "dev": ["dev"],
+      "engineer": ["dev"],
+      "researcher": ["researcher"],
+      "reviewer": ["reviewer"]
+    },
     "project_routing_keywords": {
       "GROWTH": [
         "sales",
@@ -140,12 +149,13 @@ Default project concepts:
 - `GROWTH` covers sales, marketing, social, partnerships, ecommerce, campaigns, and conversion work.
 - `DATA` covers data, research, dashboards, analytics, APIs, reports, metrics, and experiments.
 
-Routing should stay generic at the policy layer (`ceo`, `cto`, `cmo`, `reviewer`, `dev`). Deployments should map those roles to local OpenClaw agent ids with `routing.agent_roles`, for example:
+Routing stays generic at the policy layer (`ceo`, `cto`, `cmo`, `reviewer`, `dev`). The vanilla policy maps roles to same-named local agents. Deployments should override those role-to-runtime-agent candidates with `routing.agent_roles`, for example:
 
 ```json
 "agent_roles": {
   "cmo": ["manobot-cmo", "stratobot-cmo"],
   "cto": ["manobot-cto"],
+  "reviewer": ["manobot-reviewer"],
   "dev": ["main"]
 }
 ```
@@ -158,7 +168,14 @@ Default GitHub-native CQ board statuses should be:
 - `In Progress`
 - `Done`
 
-Default dispatch should remain `Todo` only.
+Default dispatch remains `Todo` only until a project has real board IDs/status options. When a deployment configures a `Review` status and includes `Review` in that project's `dispatch_statuses`, `cq:change` work uses the reviewed-change flow:
+
+1. implementation agent completes the source/content/config/docs change
+2. CQ moves the issue to `Review`
+3. reviewer agent picks the open `Review` issue
+4. if the reviewer posts `status=done` with `needs_review=false`, CQ moves the project item to `Done`
+
+If `Review` is not configured for dispatch, Review remains a human/operator lane.
 
 Advanced/internal profiles may extend the board manually in the GitHub UI with richer statuses such as:
 

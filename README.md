@@ -155,7 +155,7 @@ This keeps CQ easy to upgrade while private company context can evolve in its ow
 
 Generated reports and research artifacts should not be mixed into product/profile PR branches. CQ defaults to ignored local artifacts under `.clawqueue/boards`; companies that want artifact history in git should use a second repo dedicated to worklog/artifacts. See the [artifacts guide](https://clawqueue.github.io/ClawQueue/guide/artifacts).
 
-CQ works with the default GitHub Project status flow out of the box: `Todo`, `In Progress`, `Done`, with dispatch defaulting to `Todo` only. Teams that want a richer human-agent workflow can extend the board manually in the GitHub UI with statuses such as `Inbox`, `Review`, and `Blocked`. Bootstrap a new GitHub Project board with `python3 scripts/bootstrap_project_board.py`.
+CQ works with the default GitHub Project status flow out of the box: `Todo`, `In Progress`, `Done`, with dispatch defaulting to `Todo` only. Teams that want a richer human-agent workflow can extend the board manually in the GitHub UI with statuses such as `Inbox`, `Review`, and `Blocked`. When `Review` is included in a project's `dispatch_statuses`, completed `cq:change` work moves to Review, the `reviewer` agent can pick it up, and a passing reviewer result with `needs_review=false` moves the item to Done. Bootstrap a new GitHub Project board with `python3 scripts/bootstrap_project_board.py`.
 
 ---
 
@@ -200,16 +200,17 @@ GitHub issue in Todo
       claudecode →  claude -p <prompt> --print
       codex      →  codex -p <prompt>
   → worker comments completion  <!-- clawqueue:done -->
-  → CQ moves completed work to Review and closes the GitHub issue
-  → human reviews while closed, then either drags Review → Done or reopens in Review for revision
-  → reopened Review issue is eligible for a reviewer/revision agent
+  → CQ moves completed cq:change work to Review where configured
+  → reviewer agent or human reviews the result
+  → passing reviewer result (needs_review=false) moves Review → Done
+  → failed/blocked review stays visible for retry or human action
 ```
 
 ClawQueue decides **which issue** gets picked, **which policy applies**, and **which backend** launches it. OpenClaw is usually upstream as the context-rich intake/chief-of-staff layer; when using the `openclaw` backend, it is also the runtime that launches the named specialist agent. With `claudecode` or `codex`, CQ passes the full task prompt directly to that CLI instead.
 
 An issue is eligible when it is **open, unassigned, on a configured board status listed in that project’s `dispatch_statuses` policy**, under the attempt cap, and not blocked by locks, throttles, activity gates, or quota guards. The default policy is `Todo` only.
 
-Recommended human-in-the-loop convention: closed + Review means “deliverable ready, human review pending, scheduler must wait”; open + Review means “changes requested, scheduler may revise”; closed + Done means “accepted/final.”
+Recommended convention: open + Review means “ready for reviewer/human review”; closed + Done means “accepted/final.” If a deployment wants Review to remain human-only, leave Review out of `dispatch_statuses`.
 
 ---
 

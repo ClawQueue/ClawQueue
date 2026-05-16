@@ -210,6 +210,7 @@ class ClawQueueDispatcher:
 
     def completed_status_key(self, repo: str, number: int, summary: dict) -> str:
         labels = [label.get("name", "") for label in summary.get("labels", [])]
+        label_set = {label.strip().lower() for label in labels if label.strip()}
         comments = summary.get("comments") or []
         last_comment = self.latest_completion_comment(comments)
 
@@ -217,20 +218,24 @@ class ClawQueueDispatcher:
         entry = cache.get(self.tracker.cache_key(repo, number), {})
         project = self.config.projects.get(entry.get("project", ""))
         has_review_column = bool(project and "review" in project.status_options)
+        current_status = str(entry.get("status", ""))
+        is_review_lane = current_status in {"Review", "In review"}
         has_done_comment = self.is_completion_comment(last_comment)
         if has_done_comment and self.has_retry_after_latest_completion(comments):
             return "todo"
         result = extract_result(last_comment) or {}
         result_status = result.get("status")
         needs_review = bool(result.get("needs_review"))
-        review_labels = {"cto", "dev", "engineer"}
+        review_labels = {"cto", "dev", "engineer", "cq:change"}
         if not has_done_comment:
             return "todo"
         if result_status in {"failed", "blocked"}:
             return "review" if has_review_column else "todo"
+        if has_review_column and is_review_lane and result_status == "done" and not needs_review:
+            return "done"
         if has_review_column and result_status == "done":
             return "review"
-        if has_review_column and (needs_review or any(label in review_labels for label in labels)):
+        if has_review_column and (needs_review or bool(label_set & review_labels)):
             return "review"
         return "done"
 
