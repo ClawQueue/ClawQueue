@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">Before and after preview for ClawQueue reviewer flow</title>
+  <desc id="desc">A side-by-side preview of the README Mermaid flow before and after adding the reviewer agent path for code changes.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#51535a"/>
+    </marker>
+    <style>
+      .bg { fill: #f6f8fa; }
+      .panel { fill: #ffffff; stroke: #d0d7de; stroke-width: 1.5; rx: 14; }
+      .title { font: 700 28px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #111827; }
+      .subtitle { font: 500 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #59636e; }
+      .node { fill: #ffffff; stroke: #8c959f; stroke-width: 1.4; rx: 8; }
+      .node-fill { fill: #f6f8fa; stroke: #8c959f; stroke-width: 1.4; rx: 8; }
+      .decision { fill: #fff8c5; stroke: #bf8700; stroke-width: 1.5; }
+      .review { fill: #ddf4ff; stroke: #0969da; stroke-width: 1.5; rx: 8; }
+      .accept { fill: #dafbe1; stroke: #1a7f37; stroke-width: 1.5; rx: 8; }
+      .text { font: 600 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #24292f; text-anchor: middle; dominant-baseline: middle; }
+      .small { font: 600 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #57606a; text-anchor: middle; dominant-baseline: middle; }
+      .label { font: 700 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #0969da; text-anchor: middle; }
+      .arrow { stroke: #51535a; stroke-width: 1.6; fill: none; marker-end: url(#arrow); }
+      .faded { opacity: .74; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1400" height="760"/>
+  <text class="title" x="700" y="46" text-anchor="middle">README Mermaid Flow Preview</text>
+  <text class="subtitle" x="700" y="76" text-anchor="middle">PR #9 makes code changes route through Review and the reviewer agent before human acceptance.</text>
+
+  <rect class="panel" x="36" y="112" width="638" height="604" rx="14"/>
+  <rect class="panel" x="726" y="112" width="638" height="604" rx="14"/>
+  <text class="title" x="355" y="154" text-anchor="middle">Before</text>
+  <text class="subtitle" x="355" y="180" text-anchor="middle">All output went straight to human review.</text>
+  <text class="title" x="1045" y="154" text-anchor="middle">After</text>
+  <text class="subtitle" x="1045" y="180" text-anchor="middle">cq:change work gets an explicit reviewer-agent lane.</text>
+
+  <!-- Before panel -->
+  <rect class="node" x="94" y="222" width="190" height="48" rx="8"/>
+  <text class="text" x="189" y="246">Project docs + repo</text>
+  <rect class="node" x="425" y="222" width="170" height="48" rx="8"/>
+  <text class="text" x="510" y="246">Operator request</text>
+  <rect class="node-fill" x="230" y="306" width="250" height="52" rx="8"/>
+  <text class="text" x="355" y="332">OpenClaw intake</text>
+  <rect class="node" x="230" y="392" width="250" height="52" rx="8"/>
+  <text class="text" x="355" y="418">Scoped GitHub issue</text>
+  <rect class="node" x="230" y="478" width="250" height="52" rx="8"/>
+  <text class="text" x="355" y="504">GitHub Project queue</text>
+  <rect class="node" x="230" y="564" width="250" height="52" rx="8"/>
+  <text class="text" x="355" y="590">CQ scheduler + runner</text>
+  <rect class="accept" x="194" y="648" width="322" height="48" rx="8"/>
+  <text class="text" x="355" y="672">Human review in GitHub</text>
+  <path class="arrow" d="M189 270 C189 294 250 302 312 312"/>
+  <path class="arrow" d="M510 270 C510 294 460 302 398 312"/>
+  <path class="arrow" d="M355 358 L355 388"/>
+  <path class="arrow" d="M355 444 L355 474"/>
+  <path class="arrow" d="M355 530 L355 560"/>
+  <path class="arrow" d="M355 616 L355 644"/>
+
+  <!-- After panel -->
+  <rect class="node" x="774" y="222" width="190" height="48" rx="8"/>
+  <text class="text" x="869" y="246">Project docs + repo</text>
+  <rect class="node" x="1115" y="222" width="170" height="48" rx="8"/>
+  <text class="text" x="1200" y="246">Operator request</text>
+  <rect class="node-fill" x="920" y="306" width="250" height="52" rx="8"/>
+  <text class="text" x="1045" y="332">OpenClaw intake</text>
+  <rect class="node" x="920" y="392" width="250" height="52" rx="8"/>
+  <text class="text" x="1045" y="418">Scoped GitHub issue</text>
+  <text class="small" x="1045" y="462">review_level: standard | extra</text>
+  <rect class="node" x="920" y="488" width="250" height="52" rx="8"/>
+  <text class="text" x="1045" y="514">CQ scheduler + runner</text>
+  <polygon class="decision" points="1045,568 1180,620 1045,672 910,620"/>
+  <text class="text" x="1045" y="614">Code/config/docs</text>
+  <text class="text" x="1045" y="632">change?</text>
+  <rect class="review" x="778" y="648" width="190" height="48" rx="8"/>
+  <text class="text" x="873" y="672">Review lane</text>
+  <rect class="review" x="778" y="568" width="190" height="48" rx="8"/>
+  <text class="text" x="873" y="592">reviewer agent</text>
+  <rect class="accept" x="1110" y="648" width="190" height="48" rx="8"/>
+  <text class="text" x="1205" y="672">Human acceptance</text>
+  <path class="arrow" d="M869 270 C869 294 930 302 992 312"/>
+  <path class="arrow" d="M1200 270 C1200 294 1150 302 1088 312"/>
+  <path class="arrow" d="M1045 358 L1045 388"/>
+  <path class="arrow" d="M1045 444 L1045 484"/>
+  <path class="arrow" d="M1045 540 L1045 564"/>
+  <path class="arrow" d="M932 648 C900 632 880 624 873 620"/>
+  <text class="label" x="895" y="643">cq:change</text>
+  <path class="arrow" d="M873 568 L873 620"/>
+  <path class="arrow" d="M968 592 C1040 594 1134 626 1190 648"/>
+  <path class="arrow" d="M1158 648 C1182 634 1196 624 1205 620"/>
+  <text class="label" x="1190" y="638">artifact/report</text>
+</svg>
