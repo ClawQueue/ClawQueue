@@ -20,6 +20,7 @@ A good OpenClaw setup response should cover:
 - how to run `scripts/status.py` and `scripts/scheduler.py` manually
 - what must be true before installing launchd/cron
 - what safety boundaries require human approval
+- how chief-of-staff intake chooses `review_level: standard | extra` based on complexity and risk
 
 Do not enable periodic automation until one manual scheduler run is understandable and safe.
 
@@ -30,8 +31,9 @@ Do not enable periodic automation until one manual scheduler run is understandab
 3. CQ's scheduler runs manually or from cron/launchd.
 4. Each scheduler tick checks configured dispatch statuses and dispatches at most one eligible issue. The default profile policy is `Todo` only.
 5. The worker agent comments completion using CQ's completion marker.
-6. CQ moves completed work to Review and closes the GitHub issue when auto-close is enabled.
-7. Humans review while the issue is closed, then either drag Review → Done or reopen it in Review for revision.
+6. CQ moves completed `cq:change` work to Review when that lane is configured.
+7. The `reviewer` agent or a human reviews the result; a passing reviewer result uses `extra_review_required: false`, while risky unresolved work uses `extra_review_required: true`.
+8. CQ closes the issue only after accepted Done state when auto-close is enabled.
 
 Use chat for discussion. Use issues for durable work.
 
@@ -200,11 +202,15 @@ Recommended pattern:
 ```text
 Human discussion
   -> chief of staff drafts/refines a GitHub issue
+  -> issue includes review_level: standard | extra
   -> CQ scheduler picks one eligible issue
   -> persistent profile agent executes with the relevant mode lens
   -> result is written back to the issue
+  -> cq:change work goes through reviewer/human review before Done
   -> important lessons are distilled into profile/agent memory or docs
 ```
+
+Use `review_level: standard` for ordinary scoped changes. Use `review_level: extra` for changes that are broad, security-sensitive, public-facing, hard to test, likely to affect approvals, or otherwise expensive to get wrong. `extra_review_required` belongs in the worker/reviewer result and means another stronger pass is still needed; it is not the default way to say normal review happened.
 
 Do not make the chief-of-staff assistant simply “wear every hat” for all heavy work. That centralizes context, but it prevents specialist agents from developing useful role memory and turns CQ into fake orchestration. Use the chief of staff for intake, shaping, and synthesis; use profile agents for durable execution.
 

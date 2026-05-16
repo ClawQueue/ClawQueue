@@ -92,7 +92,11 @@ flowchart LR
     H --> K[Issue comment + artifact/PR]
     I --> K
     J --> K
-    K --> L[Human review in GitHub]
+    K --> L{Code/config/docs change?}
+    L -->|cq:change| M[Review lane]
+    M --> N[reviewer agent]
+    N --> O[Human acceptance in GitHub]
+    L -->|artifact/report| O
 ```
 
 In this model, the human operator can ask OpenClaw for help in plain language; OpenClaw uses project context to shape that rough intent into a full GitHub issue, and ClawQueue provides the GitHub-native queue, scheduler, policy, and reporting loop that carries the issue through execution and review.
@@ -104,7 +108,7 @@ The intended operating loop is:
 3. GitHub Issues/Projects provide the shared queue, audit trail, and output history.
 4. CQ scans eligible issues, resolves labels into agent modes, moves board status, and starts one worker.
 5. The worker runs through OpenClaw, Claude Code (`claude`), or Codex (`codex`) and reports back with an artifact, code change, or PR-ready result.
-6. A human reviews the result in GitHub before accepting, revising, or publishing anything externally.
+6. For `cq:change` work, CQ moves the completed issue to Review where the `reviewer` agent or a human checks the result before acceptance.
 
 For multiple people, each person should run their own CQ/OpenClaw instance against the same GitHub boards, with their own accounts, secrets, approvals, and local context. By default CQ only dispatches `Todo` items. A deployment can opt into other dispatch statuses in its profile policy, but Review is usually a human/operator lane.
 
@@ -155,7 +159,7 @@ This keeps CQ easy to upgrade while private company context can evolve in its ow
 
 Generated reports and research artifacts should not be mixed into product/profile PR branches. CQ defaults to ignored local artifacts under `.clawqueue/boards`; companies that want artifact history in git should use a second repo dedicated to worklog/artifacts. See the [artifacts guide](https://clawqueue.github.io/ClawQueue/guide/artifacts).
 
-CQ works with the default GitHub Project status flow out of the box: `Todo`, `In Progress`, `Done`, with dispatch defaulting to `Todo` only. Teams that want a richer human-agent workflow can extend the board manually in the GitHub UI with statuses such as `Inbox`, `Review`, and `Blocked`. When `Review` is included in a project's `dispatch_statuses`, completed `cq:change` work moves to Review, the `reviewer` agent can pick it up, and a passing reviewer result with `needs_review=false` moves the item to Done. Bootstrap a new GitHub Project board with `python3 scripts/bootstrap_project_board.py`.
+CQ works with the default GitHub Project status flow out of the box: `Todo`, `In Progress`, `Done`, with dispatch defaulting to `Todo` only. Teams that want a richer human-agent workflow can extend the board manually in the GitHub UI with statuses such as `Inbox`, `Review`, and `Blocked`. When `Review` is included in a project's `dispatch_statuses`, completed `cq:change` work moves to Review, the `reviewer` agent can pick it up, and a passing reviewer result with `extra_review_required=false` moves the item to Done. Bootstrap a new GitHub Project board with `python3 scripts/bootstrap_project_board.py`.
 
 ---
 
@@ -202,7 +206,7 @@ GitHub issue in Todo
   → worker comments completion  <!-- clawqueue:done -->
   → CQ moves completed cq:change work to Review where configured
   → reviewer agent or human reviews the result
-  → passing reviewer result (needs_review=false) moves Review → Done
+  → passing reviewer result (extra_review_required=false) moves Review → Done
   → failed/blocked review stays visible for retry or human action
 ```
 
@@ -549,9 +553,12 @@ Workers should not directly close issues or move board status. They report a sma
   "status": "done",
   "summary": "Brief operator-facing summary.",
   "files_changed": ["relative/path-or-github-url"],
-  "needs_review": true
+  "review_level": "standard",
+  "extra_review_required": false
 }
 ```
+
+`review_level` is issue-intake policy, not worker vibes. The chief-of-staff assistant should set `review_level: standard` for ordinary scoped changes and `review_level: extra` for high-risk, broad, security-sensitive, public-facing, or hard-to-verify changes. Workers and reviewers report `extra_review_required: true` only when another stronger pass is still needed before acceptance. Older `needs_review` result comments are still accepted as a compatibility alias.
 
 Supported commands:
 

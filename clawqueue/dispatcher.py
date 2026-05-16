@@ -225,17 +225,17 @@ class ClawQueueDispatcher:
             return "todo"
         result = extract_result(last_comment) or {}
         result_status = result.get("status")
-        needs_review = bool(result.get("needs_review"))
+        extra_review_required = bool(result.get("extra_review_required", result.get("needs_review")))
         review_labels = {"cto", "dev", "engineer", "cq:change"}
         if not has_done_comment:
             return "todo"
         if result_status in {"failed", "blocked"}:
             return "review" if has_review_column else "todo"
-        if has_review_column and is_review_lane and result_status == "done" and not needs_review:
+        if has_review_column and is_review_lane and result_status == "done" and not extra_review_required:
             return "done"
         if has_review_column and result_status == "done":
             return "review"
-        if has_review_column and (needs_review or bool(label_set & review_labels)):
+        if has_review_column and (extra_review_required or bool(label_set & review_labels)):
             return "review"
         return "done"
 
@@ -997,7 +997,7 @@ class ClawQueueDispatcher:
     def finalize_completed_reviews(self) -> None:
         """Move reviewed CQ tasks from Review/In review to Done.
 
-        A reviewer can post a valid `needs_review: false` CQ result even after
+        A reviewer can post a valid `extra_review_required: false` CQ result even after
         the active worker marker is gone. Without this sweep the issue remains
         queueable in Review/In review and CQ may repeatedly try to re-dispatch
         it, especially when quota guards prevent the duplicate review from

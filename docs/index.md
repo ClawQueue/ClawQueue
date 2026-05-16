@@ -179,11 +179,16 @@ routing:
     cto: cto
     cmo: cmo
     reviewer: reviewer
+review:
+  default_level: standard
+  levels: [standard, extra]
 artifacts:
   backend: local
   path: .clawqueue/boards
   commit: false
 ```
+
+For `cq:change` issues, the chief-of-staff intake step should set `review_level: standard | extra`. Use `extra` for risky, broad, public-facing, security-sensitive, or hard-to-verify changes; reviewers clear the item with `extra_review_required: false` or keep it open with `extra_review_required: true`.
 
 ## Use cases
 

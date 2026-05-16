@@ -180,7 +180,8 @@ These categories describe the task. They do not replace routing labels unless th
 4. The selected issue is assigned, moved to `In Progress`, and launched through the configured OpenClaw agent.
 5. The worker comments completion and exits.
 6. Sweep logic moves completed `cq:change` / implementation work to `Review` where configured, or back to `Todo` when orphaned.
-7. Review behavior is profile policy: Review is a human/operator lane unless a deployment includes `Review` in `dispatch_statuses`. When enabled, the `reviewer` agent reviews open Review issues and a passing result with `needs_review=false` moves the item to `Done`.
+7. Review behavior is profile policy: Review is a human/operator lane unless a deployment includes `Review` in `dispatch_statuses`. When enabled, the `reviewer` agent reviews open Review issues and a passing result with `extra_review_required=false` moves the item to `Done`.
+8. Chief-of-staff intake should set `review_level: standard | extra` in the issue body. Use `extra` for high-risk, broad, security-sensitive, public-facing, or hard-to-verify changes. Workers/reviewers should use `extra_review_required: true` only when another stronger pass is still needed.
 
 ## Project Boards
 

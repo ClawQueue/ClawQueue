@@ -25,10 +25,27 @@ class ProgressTests(unittest.TestCase):
         self.assertEqual(result["status"], "done")
         self.assertEqual(result["summary"], "ok")
         self.assertTrue(result["needs_review"])
+        self.assertTrue(result["extra_review_required"])
+        self.assertEqual(result["review_level"], "standard")
+
+    def test_extract_result_contract_prefers_extra_review_required(self) -> None:
+        body = (
+            RESULT_MARKER
+            + '\n```json\n'
+            + '{"status":"done","summary":"ok","files_changed":["README.md"],"review_level":"extra","extra_review_required":false}'
+            + '\n```\n<!-- clawqueue:done -->'
+        )
+        result = extract_result(body)
+        self.assertIsNotNone(result)
+        self.assertFalse(result["extra_review_required"])
+        self.assertFalse(result["needs_review"])
+        self.assertEqual(result["review_level"], "extra")
 
     def test_result_contract_text_mentions_clickable_deliverable_link(self) -> None:
         text = result_contract_text(4, "ExampleOrg/ExampleRepo")
         self.assertIn("Deliverable: [friendly label]", text)
+        self.assertIn("extra_review_required", text)
+        self.assertIn("review_level", text)
         self.assertIn("<!-- clawqueue:result -->", text)
         self.assertIn("<!-- clawqueue:done -->", text)
 
