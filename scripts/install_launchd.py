@@ -33,12 +33,15 @@ def main() -> int:
 
     service_env = Path.home() / ".openclaw" / "service-env"
     logs_dir = Path.home() / ".openclaw" / "tmp" / "clawqueue"
+    state_root = logs_dir
+    profile_state_dir = state_root / args.label.replace("/", "-")
     launch_agents = Path.home() / "Library" / "LaunchAgents"
     wrapper_path = service_env / args.wrapper_name
     plist_path = launch_agents / f"{args.label}.plist"
 
     service_env.mkdir(parents=True, exist_ok=True)
     logs_dir.mkdir(parents=True, exist_ok=True)
+    profile_state_dir.mkdir(parents=True, exist_ok=True)
     launch_agents.mkdir(parents=True, exist_ok=True)
 
     wrapper_path.write_text(
@@ -46,6 +49,8 @@ def main() -> int:
         "set -euo pipefail\n"
         "export PATH=\"/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin\"\n"
         f"export CLAWQUEUE_POLICY_FILE=\"{policy}\"\n"
+        f"export CLAWQUEUE_STATE_DIR=\"{profile_state_dir}\"\n"
+        f"export CLAWQUEUE_SHARED_STATE_ROOT=\"{state_root}\"\n"
         f"cd \"{repo}\"\n"
         "exec /usr/bin/python3 scripts/scheduler.py\n"
     )

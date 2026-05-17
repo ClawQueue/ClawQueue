@@ -24,6 +24,7 @@ class ClawQueueDispatcher:
     PRIORITY_ORDER = {"🔴 Urgent": 0, "🟡 Normal": 1, "": 2, "🔵 Low": 3}
     NON_PRIORITY_MODES = {"ceo", "cto", "dev", "engineer"}
     EXPLICIT_AGENT_PREFIX = "agent:"
+    COMMAND_MARKER_PREFIX = "<!-- clawqueue:command"
 
     def __init__(self, config: RuntimeConfig):
         self.config = config
@@ -34,7 +35,9 @@ class ClawQueueDispatcher:
 
     def main(self) -> int:
         self.trim_decision_log()
-        self.process_slash_commands()
+        if not self.process_slash_commands():
+            self.log_decision("skip", "command lock is active")
+            return 0
         if self.reconcile_completed_active_task():
             self.log_decision("skip", "reconciled active task; dispatch deferred until next tick")
             return 0
@@ -210,6 +213,7 @@ class ClawQueueDispatcher:
 
     def completed_status_key(self, repo: str, number: int, summary: dict) -> str:
         labels = [label.get("name", "") for label in summary.get("labels", [])]
+        label_set = {label.strip().lower() for label in labels if label.strip()}
         comments = summary.get("comments") or []
         last_comment = self.latest_completion_comment(comments)
 
@@ -217,20 +221,24 @@ class ClawQueueDispatcher:
         entry = cache.get(self.tracker.cache_key(repo, number), {})
         project = self.config.projects.get(entry.get("project", ""))
         has_review_column = bool(project and "review" in project.status_options)
+        current_status = str(entry.get("status", ""))
+        is_review_lane = current_status in {"Review", "In review"}
         has_done_comment = self.is_completion_comment(last_comment)
         if has_done_comment and self.has_retry_after_latest_completion(comments):
             return "todo"
         result = extract_result(last_comment) or {}
         result_status = result.get("status")
         needs_review = bool(result.get("needs_review"))
-        review_labels = {"cto", "dev", "engineer"}
+        review_labels = {"cto", "dev", "engineer", "cq:change"}
         if not has_done_comment:
             return "todo"
         if result_status in {"failed", "blocked"}:
             return "review" if has_review_column else "todo"
+        if has_review_column and is_review_lane and result_status == "done" and not needs_review:
+            return "done"
         if has_review_column and result_status == "done":
             return "review"
-        if has_review_column and (needs_review or any(label in review_labels for label in labels)):
+        if has_review_column and (needs_review or bool(label_set & review_labels)):
             return "review"
         return "done"
 
@@ -620,11 +628,59 @@ class ClawQueueDispatcher:
 
     @property
     def processed_commands_file(self):
-        return self.config.state_dir / "clawqueue_processed_commands.json"
+        return getattr(
+            self.config,
+            "command_ledger_file",
+            self.config.state_dir / "clawqueue_processed_commands.json",
+        )
+
+    @property
+    def command_lock_file(self):
+        ledger = self.processed_commands_file
+        return ledger.with_suffix(ledger.suffix + ".lock")
+
+    def acquire_command_lock(self) -> bool:
+        self.command_lock_file.parent.mkdir(parents=True, exist_ok=True)
+        payload = json.dumps({"pid": os.getpid(), "started": datetime.now(timezone.utc).isoformat()})
+        try:
+            fd = os.open(str(self.command_lock_file), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            try:
+                data = json.loads(self.command_lock_file.read_text())
+            except (json.JSONDecodeError, OSError):
+                data = {}
+            if self.pid_alive(data.get("pid")):
+                return False
+            self.command_lock_file.unlink(missing_ok=True)
+            try:
+                fd = os.open(str(self.command_lock_file), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            except FileExistsError:
+                return False
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(payload)
+        return True
+
+    def release_command_lock(self) -> None:
+        self.command_lock_file.unlink(missing_ok=True)
 
     def load_processed_commands(self) -> set[int]:
+        result: set[int] = set()
+        paths = [self.processed_commands_file]
+        legacy_paths = [
+            self.config.state_dir / "clawqueue_processed_commands.json",
+            getattr(self.config, "shared_state_root", self.config.state_dir) / "clawqueue_processed_commands.json",
+        ]
+        for path in legacy_paths:
+            if path not in paths:
+                paths.append(path)
+        for path in paths:
+            result.update(self.load_processed_commands_from(path))
+        return result
+
+    @staticmethod
+    def load_processed_commands_from(path) -> set[int]:
         try:
-            data = json.loads(self.processed_commands_file.read_text(encoding="utf-8"))
+            data = json.loads(path.read_text(encoding="utf-8"))
         except (FileNotFoundError, OSError, json.JSONDecodeError):
             return set()
         if not isinstance(data, list):
@@ -639,6 +695,7 @@ class ClawQueueDispatcher:
 
     def save_processed_commands(self, processed: set[int]) -> None:
         try:
+            self.processed_commands_file.parent.mkdir(parents=True, exist_ok=True)
             self.processed_commands_file.write_text(
                 json.dumps(sorted(processed)[-1000:]),
                 encoding="utf-8",
@@ -646,34 +703,64 @@ class ClawQueueDispatcher:
         except OSError as exc:
             print(f"⚠️ Could not save processed CQ commands: {exc}", file=sys.stderr)
 
-    def process_slash_commands(self) -> None:
-        processed = self.load_processed_commands()
-        changed = False
-        for issue in self.tracker.list_issues("all"):
-            repo = issue.get("_repo", self.config.taskboard_repo)
-            number = int(issue["number"])
-            title = issue.get("title", "")
-            labels = [
-                label.get("name", "") if isinstance(label, dict) else str(label)
-                for label in (issue.get("labels") or [])
-            ]
-            for comment in self.tracker.issue_comments(repo, number):
-                comment_id = comment.get("id")
-                try:
-                    command_id = int(comment_id)
-                except (TypeError, ValueError):
-                    continue
-                if command_id in processed:
-                    continue
-                body = str(comment.get("body", ""))
-                command = self.extract_cq_command(body)
-                if not command:
-                    continue
-                self.apply_slash_command(command, repo, number, title, labels)
-                processed.add(command_id)
-                changed = True
-        if changed:
-            self.save_processed_commands(processed)
+    def process_slash_commands(self) -> bool:
+        if not self.acquire_command_lock():
+            return False
+        try:
+            processed = self.load_processed_commands()
+            changed = False
+            for issue in self.tracker.list_issues("all"):
+                repo = issue.get("_repo", self.config.taskboard_repo)
+                number = int(issue["number"])
+                title = issue.get("title", "")
+                labels = [
+                    label.get("name", "") if isinstance(label, dict) else str(label)
+                    for label in (issue.get("labels") or [])
+                ]
+                comments = self.tracker.issue_comments(repo, number)
+                for comment in comments:
+                    command_id = self.comment_command_id(comment)
+                    if command_id is None or command_id in processed:
+                        continue
+                    body = str(comment.get("body", ""))
+                    command = self.extract_cq_command(body)
+                    if not command:
+                        continue
+                    if self.has_command_response(comments, command_id):
+                        processed.add(command_id)
+                        changed = True
+                        continue
+                    self.apply_slash_command(command, repo, number, title, labels, command_id=command_id)
+                    processed.add(command_id)
+                    changed = True
+                    self.save_processed_commands(processed)
+            if changed:
+                self.save_processed_commands(processed)
+            return True
+        finally:
+            self.release_command_lock()
+
+    @staticmethod
+    def comment_command_id(comment: dict) -> Optional[int]:
+        raw_id = comment.get("id")
+        try:
+            return int(raw_id)
+        except (TypeError, ValueError):
+            return None
+
+    def command_marker(self, command_id: int | None = None) -> str:
+        if command_id is None:
+            return f"{self.COMMAND_MARKER_PREFIX} -->"
+        return f"{self.COMMAND_MARKER_PREFIX}:{command_id} -->"
+
+    def has_command_response(self, comments: list, command_id: int) -> bool:
+        marker = self.command_marker(command_id)
+        for comment in comments:
+            if not isinstance(comment, dict):
+                continue
+            if marker in str(comment.get("body", "")):
+                return True
+        return False
 
     @staticmethod
     def extract_cq_command(body: str) -> Optional[str]:
@@ -692,7 +779,15 @@ class ClawQueueDispatcher:
             return "ready"
         return "todo"
 
-    def apply_slash_command(self, command: str, repo: str, number: int, title: str, labels: list[str]) -> None:
+    def apply_slash_command(
+        self,
+        command: str,
+        repo: str,
+        number: int,
+        title: str,
+        labels: list[str],
+        command_id: int | None = None,
+    ) -> None:
         if command in {"diagnose", "status"}:
             state, details = self.diagnose_issue(repo, number, title, labels)
             self.tracker.add_comment(
@@ -703,6 +798,7 @@ class ClawQueueDispatcher:
                     repo=repo,
                     issue=number,
                     title=title,
+                    command_id=command_id,
                     details=details,
                 ),
             )
@@ -721,6 +817,7 @@ class ClawQueueDispatcher:
                     repo=repo,
                     issue=number,
                     title=title,
+                    command_id=command_id,
                     details=["Paused by `/cq pause`. Use `/cq retry` or remove `cq:paused` to resume."],
                 ),
             )
@@ -728,12 +825,35 @@ class ClawQueueDispatcher:
             return
 
         if command == "retry":
+            active_data = self.active_task_data()
+            active_issue = active_data.get("issue")
+            active_repo = active_data.get("repo", self.config.taskboard_repo)
+            active_pid = active_data.get("worker_pid")
+            if active_issue and self.attempt_count_key(active_repo, active_issue) == self.attempt_count_key(repo, number):
+                if self.pid_alive(active_pid):
+                    self.tracker.add_comment(
+                        repo,
+                        number,
+                        self.command_comment_body(
+                            status="running",
+                            repo=repo,
+                            issue=number,
+                            title=title,
+                            command_id=command_id,
+                            details=[
+                                "Retry requested with `/cq retry`, but this issue still has an active worker.",
+                                "CQ left the active worker and board state untouched to avoid dispatching duplicate work.",
+                                "Wait for completion, stop the worker, or clear stale active state after confirming the process is gone.",
+                            ],
+                        ),
+                    )
+                    self.log_decision("command", "/cq retry blocked: active worker", extra={"repo": repo, "issue": number})
+                    return
+                self.config.active_file.unlink(missing_ok=True)
             for label in ("cq:paused", "cq:failed", "cq:blocked"):
                 self.tracker.remove_label(repo, number, label)
             self.tracker.remove_assignee(repo, number)
             self.tracker.reopen_issue(repo, number)
-            if self.active_task_key() == self.attempt_count_key(repo, number):
-                self.config.active_file.unlink(missing_ok=True)
             self.reset_attempt_count(repo, number)
             self.tracker.set_project_board_status(number, self.queue_status_key(repo, number), title, labels, repo=repo)
             self.tracker.add_comment(
@@ -744,6 +864,7 @@ class ClawQueueDispatcher:
                     repo=repo,
                     issue=number,
                     title=title,
+                    command_id=command_id,
                     details=[
                         "Retry requested with `/cq retry`; paused/failed labels and local attempt count were cleared.",
                         "The issue was reopened so the scheduler can pick it up again.",
@@ -766,6 +887,7 @@ class ClawQueueDispatcher:
                     repo=repo,
                     issue=number,
                     title=title,
+                    command_id=command_id,
                     details=["Queued by `/cq run`; scheduler will pick it when guards allow."],
                 ),
             )
@@ -780,13 +902,24 @@ class ClawQueueDispatcher:
                 repo=repo,
                 issue=number,
                 title=title,
+                command_id=command_id,
                 details=[f"Unknown command `/cq {command}`. Supported: diagnose, run, retry, pause."],
             ),
         )
         self.log_decision("command", f"unknown /cq {command}", extra={"repo": repo, "issue": number})
 
-    def command_comment_body(self, *, status: str, repo: str, issue: int, title: str, details: list[str] | None = None) -> str:
+    def command_comment_body(
+        self,
+        *,
+        status: str,
+        repo: str,
+        issue: int,
+        title: str,
+        command_id: int | None = None,
+        details: list[str] | None = None,
+    ) -> str:
         lines = [
+            self.command_marker(command_id),
             f"### CQ command result: {status}",
             "",
             f"Issue: `{repo}#{issue}`",
@@ -993,17 +1126,21 @@ class ClawQueueDispatcher:
             self.maybe_close_completed_issue(repo, number, "done", "done")
 
     def active_task_key(self) -> Optional[str]:
-        if not self.config.active_file.exists():
-            return None
-        try:
-            active_data = json.loads(self.config.active_file.read_text())
-            active_issue = active_data.get("issue")
-            active_repo = active_data.get("repo", self.config.taskboard_repo)
-            if active_issue:
-                return self.attempt_count_key(active_repo, active_issue)
-        except (json.JSONDecodeError, OSError):
-            return None
+        active_data = self.active_task_data()
+        active_issue = active_data.get("issue")
+        active_repo = active_data.get("repo", self.config.taskboard_repo)
+        if active_issue:
+            return self.attempt_count_key(active_repo, active_issue)
         return None
+
+    def active_task_data(self) -> dict:
+        if not self.config.active_file.exists():
+            return {}
+        try:
+            data = json.loads(self.config.active_file.read_text())
+        except (json.JSONDecodeError, OSError):
+            return {}
+        return data if isinstance(data, dict) else {}
 
     def maybe_close_completed_issue(self, repo: str, number: int, status_key: str, result_status: str = "done") -> None:
         if not self.config.reviewer_auto_closes_issue:

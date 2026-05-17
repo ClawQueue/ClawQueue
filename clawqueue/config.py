@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import tempfile
 from dataclasses import dataclass
@@ -231,10 +232,12 @@ class RuntimeConfig:
     private_config_file: Path
     sessions_dir: Path
     state_dir: Path
+    shared_state_root: Path
     lock_file: Path
     last_run_file: Path
     active_file: Path
     attempt_count_file: Path
+    command_ledger_file: Path
     log_dir: Path
     decision_log_file: Path
     decision_log_retention_days: int
@@ -357,6 +360,11 @@ def _build_agent_maps(all_opus: bool) -> tuple[dict[str, str], dict[str, str], d
     return mode_to_agent, agent_provider, agent_fallback
 
 
+def _path_slug(value: str) -> str:
+    slug = re.sub(r"[^A-Za-z0-9._-]+", "-", value.strip()).strip("-._")
+    return slug or "unknown"
+
+
 def _string_map(value: Any) -> dict[str, str]:
     if not isinstance(value, dict):
         return {}
@@ -462,6 +470,16 @@ def load_config(profile: str | None = None) -> RuntimeConfig:
         "CLAWQUEUE_PRIMARY_REPO",
         repositories.get("primary", "example-org/clawqueue"),
     )
+    default_shared_state_root = state_dir if state_dir.name == "clawqueue" else state_dir.parent
+    shared_state_root = _config_path(
+        os.environ.get(
+            "CLAWQUEUE_SHARED_STATE_ROOT",
+            runtime.get("shared_state_root") or default_shared_state_root,
+        )
+    )
+    repo_state_key = _path_slug(taskboard_repo)
+    for child in ("locks", "active", "attempts", "commands", "last-run"):
+        (shared_state_root / child).mkdir(parents=True, exist_ok=True)
     extra_repos_raw = os.environ.get("CLAWQUEUE_EXTRA_REPOS")
     if extra_repos_raw:
         extra_repos = tuple(
@@ -547,10 +565,12 @@ def load_config(profile: str | None = None) -> RuntimeConfig:
             )
         ),
         state_dir=state_dir,
-        lock_file=state_dir / "clawqueue.lock",
-        last_run_file=state_dir / "clawqueue_last_run",
-        active_file=state_dir / "clawqueue_active",
-        attempt_count_file=state_dir / "clawqueue_attempt_counts.json",
+        shared_state_root=shared_state_root,
+        lock_file=shared_state_root / "locks" / f"{repo_state_key}.lock",
+        last_run_file=shared_state_root / "last-run" / f"{repo_state_key}",
+        active_file=shared_state_root / "active" / f"{repo_state_key}.json",
+        attempt_count_file=shared_state_root / "attempts" / f"{repo_state_key}.json",
+        command_ledger_file=shared_state_root / "commands" / f"{repo_state_key}.json",
         log_dir=log_dir,
         decision_log_file=log_dir / "decisions.jsonl",
         decision_log_retention_days=_env_int(

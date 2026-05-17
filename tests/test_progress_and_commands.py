@@ -49,7 +49,20 @@ class ProgressTests(unittest.TestCase):
 
         self.assertIn("CQ command result: diagnosed", body)
         self.assertIn("Diagnosis requested", body)
+        self.assertIn("<!-- clawqueue:command -->", body)
         self.assertNotIn("<!-- clawqueue:progress -->", body)
+
+    def test_command_comment_body_includes_command_id_marker(self) -> None:
+        dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+        body = dispatcher.command_comment_body(
+            status="queued",
+            repo="owner/repo",
+            issue=7,
+            title="Task",
+            command_id=123,
+        )
+
+        self.assertIn("<!-- clawqueue:command:123 -->", body)
 
 
 class DiagnoseTests(unittest.TestCase):
