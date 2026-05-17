@@ -65,10 +65,9 @@ class ProgressTests(unittest.TestCase):
             details=["Diagnosis requested with `/cq diagnose`"],
         )
 
-        self.assertIn("CQ diagnose command", body)
+        self.assertIn("CQ command result: diagnosed", body)
         self.assertIn("Diagnosis requested", body)
-        self.assertNotIn("Issue:", body)
-        self.assertNotIn("Title:", body)
+        self.assertIn("<!-- clawqueue:command -->", body)
         self.assertNotIn("<!-- clawqueue:progress -->", body)
 
     def test_historical_retry_with_command_result_is_not_replayed(self) -> None:
@@ -96,7 +95,7 @@ class ProgressTests(unittest.TestCase):
             )
             dispatcher.tracker = Tracker()
             applied: list[tuple[str, str, int]] = []
-            dispatcher.apply_slash_command = lambda command, repo, number, title, labels: applied.append(  # type: ignore[method-assign]
+            dispatcher.apply_slash_command = lambda command, repo, number, title, labels, command_id=None: applied.append(  # type: ignore[method-assign]
                 (command, repo, number)
             )
 
@@ -133,7 +132,7 @@ class ProgressTests(unittest.TestCase):
             )
             dispatcher.tracker = Tracker()
             applied: list[tuple[str, str, int]] = []
-            dispatcher.apply_slash_command = lambda command, repo, number, title, labels: applied.append(  # type: ignore[method-assign]
+            dispatcher.apply_slash_command = lambda command, repo, number, title, labels, command_id=None: applied.append(  # type: ignore[method-assign]
                 (command, repo, number)
             )
 
@@ -166,7 +165,7 @@ class ProgressTests(unittest.TestCase):
             )
             dispatcher.tracker = Tracker()
             applied: list[tuple[str, str, int]] = []
-            dispatcher.apply_slash_command = lambda command, repo, number, title, labels: applied.append(  # type: ignore[method-assign]
+            dispatcher.apply_slash_command = lambda command, repo, number, title, labels, command_id=None: applied.append(  # type: ignore[method-assign]
                 (command, repo, number)
             )
 
@@ -174,6 +173,18 @@ class ProgressTests(unittest.TestCase):
             dispatcher.process_slash_commands()
 
         self.assertEqual(applied, [("retry", "owner/repo", 7)])
+
+    def test_command_comment_body_includes_command_id_marker(self) -> None:
+        dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+        body = dispatcher.command_comment_body(
+            status="queued",
+            repo="owner/repo",
+            issue=7,
+            title="Task",
+            command_id=123,
+        )
+
+        self.assertIn("<!-- clawqueue:command:123 -->", body)
 
 
 class DiagnoseTests(unittest.TestCase):

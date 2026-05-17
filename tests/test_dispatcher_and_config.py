@@ -138,6 +138,76 @@ class DispatcherCompletionTests(unittest.TestCase):
         self.assertFalse(ready)
         self.assertEqual(blocked_by, [5])
 
+    def test_retry_does_not_clear_live_active_worker(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            active_file = Path(tmp) / "active.json"
+            active_file.write_text('{"issue": 7, "repo": "owner/repo", "worker_pid": %d}' % os.getpid())
+            calls: list[str] = []
+            comments: list[str] = []
+            dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+            dispatcher.config = SimpleNamespace(
+                active_file=active_file,
+                taskboard_repo="owner/repo",
+                attempt_count_file=Path(tmp) / "attempts.json",
+                decision_log_file=Path(tmp) / "decisions.jsonl",
+                decision_log_retention_days=7,
+            )
+            dispatcher.tracker = SimpleNamespace(
+                add_comment=lambda repo, number, body: comments.append(body),
+                remove_label=lambda repo, number, label: calls.append(f"remove_label:{label}"),
+                remove_assignee=lambda repo, number: calls.append("remove_assignee"),
+                reopen_issue=lambda repo, number: calls.append("reopen_issue"),
+                set_project_board_status=lambda number, status, title, labels, repo: calls.append(f"status:{status}"),
+                build_board_cache=lambda: {"owner/repo:7": {"project": "P"}},
+                cache_key=lambda repo, number: f"{repo}:{number}",
+            )
+
+            dispatcher.apply_slash_command("retry", "owner/repo", 7, "Task", [], command_id=123)
+
+            self.assertEqual(calls, [])
+            self.assertTrue(active_file.exists())
+            self.assertIn("CQ command result: running", comments[0])
+            self.assertIn("<!-- clawqueue:command:123 -->", comments[0])
+
+    def test_process_slash_commands_skips_already_acknowledged_command(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            applied: list[str] = []
+            dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+            dispatcher.config = SimpleNamespace(
+                state_dir=Path(tmp),
+                command_ledger_file=Path(tmp) / "commands.json",
+                taskboard_repo="owner/repo",
+            )
+            dispatcher.tracker = SimpleNamespace(
+                list_issues=lambda state: [{"number": 7, "title": "Task", "labels": [], "_repo": "owner/repo"}],
+                issue_comments=lambda repo, number: [
+                    {"id": 123, "body": "/cq retry"},
+                    {"id": 124, "body": "<!-- clawqueue:command:123 -->\n### CQ command result: queued"},
+                ],
+            )
+            dispatcher.apply_slash_command = lambda command, repo, number, title, labels, command_id=None: applied.append(command)  # type: ignore[method-assign]
+
+            self.assertTrue(dispatcher.process_slash_commands())
+
+            self.assertEqual(applied, [])
+            self.assertEqual(dispatcher.load_processed_commands(), {123})
+
+    def test_processed_command_ledger_reads_legacy_state_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            state_dir = Path(tmp) / "profile"
+            shared_root = Path(tmp)
+            state_dir.mkdir()
+            (state_dir / "clawqueue_processed_commands.json").write_text("[111]")
+            (shared_root / "clawqueue_processed_commands.json").write_text("[222]")
+            dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+            dispatcher.config = SimpleNamespace(
+                state_dir=state_dir,
+                shared_state_root=shared_root,
+                command_ledger_file=shared_root / "commands" / "owner-repo.json",
+            )
+
+            self.assertEqual(dispatcher.load_processed_commands(), {111, 222})
+
 
 class FakeTracker:
     def __init__(self) -> None:
@@ -193,7 +263,7 @@ class DispatcherReviewSweepTests(unittest.TestCase):
     def test_finalize_completed_reviews_leaves_review_for_human_done(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
-            dispatcher.config = SimpleNamespace(active_file=Path(tmp) / "active.json", reviewer_auto_closes_issue=True)
+            dispatcher.config = SimpleNamespace(active_file=Path(tmp) / "active.json", reviewer_auto_closes_issue=True, taskboard_repo="ExampleOrg/ExampleRepo")
             dispatcher.tracker = FakeTracker()
             dispatcher.completed_status_key = lambda repo, number, summary: "review"  # type: ignore[method-assign]
 
@@ -259,6 +329,37 @@ class ConfigTests(unittest.TestCase):
         self.assertFalse(config.reviewer_auto_closes_issue)
         self.assertEqual(config.agent_provider["cto"], "codex")
         self.assertEqual(config.agent_provider["researcher"], "claude")
+        self.assertEqual(config.shared_state_root, state_dir.parent)
+        self.assertEqual(config.command_ledger_file, state_dir.parent / "commands" / "example-org-clawqueue.json")
+        self.assertEqual(config.active_file, state_dir.parent / "active" / "example-org-clawqueue.json")
+
+    def test_profile_state_dirs_share_repo_scoped_runtime_state(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            policy = Path(tmp) / "policy.md"
+            state_dir = Path(tmp) / "state" / "profile-a"
+            policy.write_text(
+                """---
+{
+  "repositories": {"primary": "Owner/Repo"},
+  "projects": {}
+}
+---
+""",
+                encoding="utf-8",
+            )
+
+            with patched_env(
+                {
+                    "CLAWQUEUE_POLICY_FILE": str(policy),
+                    "CLAWQUEUE_PRIVATE_CONFIG_FILE": str(Path(tmp) / "missing.json"),
+                    "CLAWQUEUE_STATE_DIR": str(state_dir),
+                }
+            ):
+                config = load_config()
+
+        self.assertEqual(config.shared_state_root, state_dir.parent)
+        self.assertEqual(config.lock_file, state_dir.parent / "locks" / "Owner-Repo.lock")
+        self.assertEqual(config.command_ledger_file, state_dir.parent / "commands" / "Owner-Repo.json")
 
 
 class QuotaConfigTests(unittest.TestCase):
