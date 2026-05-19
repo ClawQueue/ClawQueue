@@ -460,6 +460,18 @@ python3 scripts/status.py --profile <profile>
 python3 scripts/install_launchd.py --repo "$HOME/ClawQueue" --profile <profile>
 ```
 
+For multiple schedulers on one Mac, give each LaunchAgent its own label and wrapper name. The installer now writes per-label runtime isolation by default:
+
+```bash
+python3 scripts/install_launchd.py \
+  --repo "$HOME/ClawQueue" \
+  --profile weatherxm \
+  --label com.clawqueue.weatherxm \
+  --wrapper-name clawqueue-weatherxm.sh
+```
+
+Defaults are `~/.openclaw/tmp/clawqueue/<label>` for `CLAWQUEUE_STATE_DIR`, `~/.local/share/clawqueue/<label>` for `CLAWQUEUE_LOG_DIR`, and the active profile/policy config directory for `CLAWQUEUE_PRIVATE_CONFIG_FILE`. Override them explicitly with `--state-dir`, `--log-dir`, and `--private-config` when a deployment needs fixed paths.
+
 ### Minimum Local Setup
 
 - `gh` authenticated with access to configured repos and ProjectV2 boards
@@ -483,6 +495,7 @@ Telegram, activity gates, quota tuning, mode URL overrides, and fallback maps ar
 | `CLAWQUEUE_PROJECTS_JSON` | tracker | JSON override for project IDs, field IDs, status options |
 | `CLAWQUEUE_GITHUB_ASSIGNEE` | tracker | GitHub login to assign while a worker is active |
 | `CLAWQUEUE_STATE_DIR` | dispatcher | Runtime state dir; defaults under system temp |
+| `CLAWQUEUE_LOG_DIR` | dispatcher | Decision/log data dir; launchd installer defaults to a per-label directory under `~/.local/share/clawqueue` |
 | `CLAWQUEUE_OPENCLAW_COMMAND` | runner | Agent CLI command; default `openclaw` |
 | `CLAWQUEUE_DELIVER_CHANNEL` | runner | OpenClaw worker delivery channel; use `none`/`off` to avoid chat delivery dependency |
 | `CLAWQUEUE_COMPLETION_NOTIFY_CHANNEL` | notifier | Best-effort completion notification channel, e.g. `telegram` |
@@ -603,8 +616,8 @@ Each scheduler run:
 9. Warns when configurable remaining-quota thresholds are crossed, then stops/reroutes if stop thresholds are crossed
 10. Assigns the issue, moves it to `In Progress`, and starts the selected agent
 
-Runtime state lives in `CLAWQUEUE_STATE_DIR` (default: temp dir named `clawqueue`).  
-Decision log persists to `~/.local/share/clawqueue/decisions.jsonl`.
+Runtime state lives in `CLAWQUEUE_STATE_DIR` (default: temp dir named `clawqueue`; launchd installs use a per-label directory).
+Decision log persists under `CLAWQUEUE_LOG_DIR` (default: `~/.local/share/clawqueue`; launchd installs use a per-label directory).
 
 ```bash
 # Inspect recent decisions, active worker, attempt counts, queued issues
