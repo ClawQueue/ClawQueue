@@ -682,6 +682,7 @@ class ClawQueueDispatcher:
 
     @staticmethod
     def is_command_result_comment(body: str) -> bool:
+        """Return true for both legacy and simplified CQ command ack comments."""
         stripped = body.lstrip()
         return stripped.startswith("### CQ command result:") or (
             stripped.startswith("### CQ ") and " command" in stripped.splitlines()[0]

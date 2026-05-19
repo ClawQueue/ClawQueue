@@ -60,20 +60,26 @@ class DispatcherCompletionTests(unittest.TestCase):
 
     def test_acknowledged_retry_after_completion_does_not_stay_queueable(self) -> None:
         done = f"<!-- clawqueue:result -->\n```json\n{{\"status\":\"done\",\"needs_review\":true}}\n```\n{COMPLETION_SENTINEL}"
-        comments = [
-            {"body": done},
-            {"body": "/cq retry\nReprocess this."},
-            {"body": "### CQ command result: queued"},
+        ack_formats = [
+            "### CQ command result: queued",
+            "### CQ retry command\n\n- Queued for retry.",
         ]
-        dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
-        dispatcher.tracker = SimpleNamespace(
-            build_board_cache=lambda: {"owner/repo:7": {"project": "P"}},
-            cache_key=lambda repo, number: f"{repo}:{number}",
-        )
-        dispatcher.config = SimpleNamespace(projects={"P": SimpleNamespace(status_options={"review": "review-id"})})
+        for ack in ack_formats:
+            with self.subTest(ack=ack.splitlines()[0]):
+                comments = [
+                    {"body": done},
+                    {"body": "/cq retry\nReprocess this."},
+                    {"body": ack},
+                ]
+                dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+                dispatcher.tracker = SimpleNamespace(
+                    build_board_cache=lambda: {"owner/repo:7": {"project": "P"}},
+                    cache_key=lambda repo, number: f"{repo}:{number}",
+                )
+                dispatcher.config = SimpleNamespace(projects={"P": SimpleNamespace(status_options={"review": "review-id"})})
 
-        self.assertFalse(ClawQueueDispatcher.has_retry_after_latest_completion(comments))
-        self.assertEqual(dispatcher.completed_status_key("owner/repo", 7, {"labels": [], "comments": comments}), "review")
+                self.assertFalse(ClawQueueDispatcher.has_retry_after_latest_completion(comments))
+                self.assertEqual(dispatcher.completed_status_key("owner/repo", 7, {"labels": [], "comments": comments}), "review")
 
     def test_dependency_numbers_are_parsed_from_issue_body(self) -> None:
         body = """
