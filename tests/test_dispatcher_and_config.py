@@ -173,6 +173,22 @@ class DispatcherReviewSweepTests(unittest.TestCase):
         self.assertEqual(dispatcher.tracker.comments, [])
         self.assertEqual(dispatcher.tracker.closed, [])
 
+    def test_review_without_completion_moves_back_to_todo_with_comment(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+            dispatcher.config = SimpleNamespace(active_file=Path(tmp) / "active.json")
+            dispatcher.tracker = FakeTracker()
+
+            dispatcher.rescue_review_without_completion()
+
+        self.assertEqual(
+            dispatcher.tracker.status_updates,
+            [(1, "todo", "Issue 1", ["cto"], "ExampleOrg/ExampleRepo")],
+        )
+        self.assertEqual(len(dispatcher.tracker.comments), 1)
+        self.assertIn("no CQ completion artifact", dispatcher.tracker.comments[0][2])
+        self.assertIn("<!-- clawqueue:done -->", dispatcher.tracker.comments[0][2])
+
 
 class ConfigTests(unittest.TestCase):
     def test_provider_names_and_new_policy_keys_are_normalized(self) -> None:

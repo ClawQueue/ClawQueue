@@ -988,7 +988,49 @@ class ClawQueueDispatcher:
     def sweep_stale_in_progress(self) -> None:
         self.cleanup_closed_issues()
         self.rescue_orphaned_tasks()
+        self.rescue_review_without_completion()
         self.finalize_completed_reviews()
+
+    def rescue_review_without_completion(self) -> None:
+        """Move Review/In review items without CQ completion evidence back to Todo."""
+        cache = self.tracker.build_board_cache()
+        active_issue_key = self.active_task_key()
+
+        for key, entry in list(cache.items()):
+            if entry.get("status") not in ("Review", "In review"):
+                continue
+            repo, _, num_str = key.rpartition(":")
+            try:
+                number = int(num_str)
+            except ValueError:
+                continue
+            if active_issue_key and self.attempt_count_key(repo, number) == active_issue_key:
+                continue
+
+            summary = self.tracker.get_issue_summary(repo, number)
+            comments = summary.get("comments") or []
+            if self.latest_completion_comment(comments):
+                continue
+
+            title = summary.get("title", "")
+            labels = [label.get("name", "") for label in summary.get("labels", [])]
+            details = [
+                "CQ found this item in Review, but the issue has no CQ completion artifact (`<!-- clawqueue:done -->`).",
+                "Moved back to Todo so the owner agent can produce a completion artifact before review.",
+            ]
+            print(f"↩️ Review without completion: {repo}#{number} → Todo")
+            self.tracker.upsert_managed_comment(
+                repo,
+                number,
+                progress_body(
+                    status="queued",
+                    repo=repo,
+                    issue=number,
+                    title=title,
+                    details=details,
+                ),
+            )
+            self.tracker.set_project_board_status(number, "todo", title, labels, repo=repo)
 
     def finalize_completed_reviews(self) -> None:
         """Move reviewed CQ tasks from Review/In review to Done.
