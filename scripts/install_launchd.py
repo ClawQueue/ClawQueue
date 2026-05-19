@@ -101,6 +101,7 @@ def main() -> int:
     service_env = Path.home() / ".openclaw" / "service-env"
     state_root = Path.home() / ".openclaw" / "tmp" / "clawqueue"
     state_dir = resolve_repo_path(repo, args.state_dir) if args.state_dir.strip() else state_root / safe_label
+    shared_state_root = state_dir
     log_dir = (
         resolve_repo_path(repo, args.log_dir)
         if args.log_dir.strip()
@@ -130,7 +131,7 @@ def main() -> int:
         + shell_export("CLAWQUEUE_PRIVATE_CONFIG_FILE", private_config)
         + shell_export("CLAWQUEUE_STATE_DIR", state_dir)
         + shell_export("CLAWQUEUE_LOG_DIR", log_dir)
-        + shell_export("CLAWQUEUE_SHARED_STATE_ROOT", state_root)
+        + shell_export("CLAWQUEUE_SHARED_STATE_ROOT", shared_state_root)
         + f"cd {shlex.quote(str(repo))}\n"
         + command
     )

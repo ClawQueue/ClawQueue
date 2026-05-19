@@ -59,7 +59,7 @@ def test_installer_exports_per_label_state_log_and_private_config(monkeypatch, t
     assert f"export CLAWQUEUE_PRIVATE_CONFIG_FILE={private_config}" in text
     assert f"export CLAWQUEUE_STATE_DIR={home}/.openclaw/tmp/clawqueue/com.example.alpha" in text
     assert f"export CLAWQUEUE_LOG_DIR={home}/.local/share/clawqueue/com.example.alpha" in text
-    assert f"export CLAWQUEUE_SHARED_STATE_ROOT={home}/.openclaw/tmp/clawqueue" in text
+    assert f"export CLAWQUEUE_SHARED_STATE_ROOT={home}/.openclaw/tmp/clawqueue/com.example.alpha" in text
     assert "exec /usr/bin/python3 scripts/scheduler.py\n" in text
 
     plist_path = home / "Library" / "LaunchAgents" / "com.example.alpha.plist"
@@ -115,5 +115,6 @@ def test_custom_state_log_and_private_config_paths(monkeypatch, tmp_path):
     assert f"export CLAWQUEUE_PRIVATE_CONFIG_FILE={private_config}" in text
     assert f"export CLAWQUEUE_STATE_DIR={repo}/runtime/state" in text
     assert f"export CLAWQUEUE_LOG_DIR={repo}/runtime/logs" in text
+    assert f"export CLAWQUEUE_SHARED_STATE_ROOT={repo}/runtime/state" in text
     assert (repo / "runtime" / "state").is_dir()
     assert (repo / "runtime" / "logs").is_dir()
