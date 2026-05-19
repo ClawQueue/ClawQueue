@@ -819,6 +819,39 @@ class ClawQueueDispatcher:
             return "ready"
         return "todo"
 
+    def board_status(self, repo: str, number: int) -> str:
+        cache = self.tracker.build_board_cache()
+        entry = cache.get(self.tracker.cache_key(repo, number), {})
+        return str(entry.get("status", ""))
+
+    @staticmethod
+    def is_in_progress_status(status: str) -> bool:
+        return status.lower() == "in progress"
+
+    def add_retry_ignored_in_progress_comment(
+        self,
+        repo: str,
+        number: int,
+        title: str,
+        command_id: int | None,
+    ) -> None:
+        self.tracker.add_comment(
+            repo,
+            number,
+            self.command_comment_body(
+                status="running",
+                repo=repo,
+                issue=number,
+                title=title,
+                command_id=command_id,
+                details=[
+                    "Retry requested with `/cq retry`, but this issue is already In Progress.",
+                    "CQ left labels, assignment, attempt count, active worker state, and board status untouched to avoid duplicate work.",
+                    "Wait for completion; if the worker is genuinely stale, stop/clear the stale worker state first and then retry.",
+                ],
+            ),
+        )
+
     def apply_slash_command(
         self,
         command: str,
@@ -865,28 +898,18 @@ class ClawQueueDispatcher:
             return
 
         if command == "retry":
+            if self.is_in_progress_status(self.board_status(repo, number)):
+                self.add_retry_ignored_in_progress_comment(repo, number, title, command_id)
+                self.log_decision("command", "/cq retry ignored: issue in progress", extra={"repo": repo, "issue": number})
+                return
+
             active_data = self.active_task_data()
             active_issue = active_data.get("issue")
             active_repo = active_data.get("repo", self.config.taskboard_repo)
             active_pid = active_data.get("worker_pid")
             if active_issue and self.attempt_count_key(active_repo, active_issue) == self.attempt_count_key(repo, number):
                 if self.pid_alive(active_pid):
-                    self.tracker.add_comment(
-                        repo,
-                        number,
-                        self.command_comment_body(
-                            status="running",
-                            repo=repo,
-                            issue=number,
-                            title=title,
-                            command_id=command_id,
-                            details=[
-                                "Retry requested with `/cq retry`, but this issue still has an active worker.",
-                                "CQ left the active worker and board state untouched to avoid dispatching duplicate work.",
-                                "Wait for completion, stop the worker, or clear stale active state after confirming the process is gone.",
-                            ],
-                        ),
-                    )
+                    self.add_retry_ignored_in_progress_comment(repo, number, title, command_id)
                     self.log_decision("command", "/cq retry blocked: active worker", extra={"repo": repo, "issue": number})
                     return
                 self.config.active_file.unlink(missing_ok=True)

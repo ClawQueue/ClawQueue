@@ -167,7 +167,38 @@ class DispatcherCompletionTests(unittest.TestCase):
             self.assertEqual(calls, [])
             self.assertTrue(active_file.exists())
             self.assertIn("CQ command result: running", comments[0])
+            self.assertIn("already In Progress", comments[0])
             self.assertIn("<!-- clawqueue:command:123 -->", comments[0])
+
+    def test_retry_does_not_move_in_progress_issue_even_without_active_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            active_file = Path(tmp) / "active.json"
+            calls: list[str] = []
+            comments: list[str] = []
+            dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+            dispatcher.config = SimpleNamespace(
+                active_file=active_file,
+                taskboard_repo="owner/repo",
+                attempt_count_file=Path(tmp) / "attempts.json",
+                decision_log_file=Path(tmp) / "decisions.jsonl",
+                decision_log_retention_days=7,
+            )
+            dispatcher.tracker = SimpleNamespace(
+                add_comment=lambda repo, number, body: comments.append(body),
+                remove_label=lambda repo, number, label: calls.append(f"remove_label:{label}"),
+                remove_assignee=lambda repo, number: calls.append("remove_assignee"),
+                reopen_issue=lambda repo, number: calls.append("reopen_issue"),
+                set_project_board_status=lambda number, status, title, labels, repo: calls.append(f"status:{status}"),
+                build_board_cache=lambda: {"owner/repo:7": {"status": "In Progress", "project": "P"}},
+                cache_key=lambda repo, number: f"{repo}:{number}",
+            )
+
+            dispatcher.apply_slash_command("retry", "owner/repo", 7, "Task", ["cq:blocked"], command_id=123)
+
+            self.assertEqual(calls, [])
+            self.assertFalse(active_file.exists())
+            self.assertIn("CQ command result: running", comments[0])
+            self.assertIn("labels, assignment, attempt count", comments[0])
 
     def test_process_slash_commands_skips_already_acknowledged_command(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
