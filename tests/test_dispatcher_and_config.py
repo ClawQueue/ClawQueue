@@ -42,6 +42,26 @@ class DispatcherCompletionTests(unittest.TestCase):
         ]
         self.assertEqual(ClawQueueDispatcher.latest_completion_comment(comments), done)
 
+    def test_latest_completion_comment_after_ignores_old_completion(self) -> None:
+        old_done = f"<!-- clawqueue:result -->\n{{\"status\":\"done\"}}\n{COMPLETION_SENTINEL}"
+        new_done = f"<!-- clawqueue:result -->\n{{\"status\":\"done\",\"summary\":\"new\"}}\n{COMPLETION_SENTINEL}"
+        comments = [
+            {"body": old_done, "createdAt": "2026-05-21T12:00:00Z"},
+            {"body": "/cq retry", "createdAt": "2026-05-21T13:00:00Z"},
+            {"body": "worker note", "createdAt": "2026-05-21T13:05:00Z"},
+        ]
+
+        self.assertEqual(
+            ClawQueueDispatcher.latest_completion_comment_after(comments, "2026-05-21T13:01:00+00:00"),
+            "",
+        )
+
+        comments.append({"body": new_done, "createdAt": "2026-05-21T13:10:00Z"})
+        self.assertEqual(
+            ClawQueueDispatcher.latest_completion_comment_after(comments, "2026-05-21T13:01:00+00:00"),
+            new_done,
+        )
+
     def test_unacknowledged_retry_after_completion_makes_issue_queueable_again(self) -> None:
         done = f"<!-- clawqueue:result -->\n```json\n{{\"status\":\"done\",\"needs_review\":true}}\n```\n{COMPLETION_SENTINEL}"
         comments = [
@@ -222,6 +242,75 @@ class DispatcherCompletionTests(unittest.TestCase):
 
             self.assertEqual(applied, [])
             self.assertEqual(dispatcher.load_processed_commands(), {123})
+
+    def test_dead_worker_ignores_completion_from_before_worker_start(self) -> None:
+        done = f"<!-- clawqueue:result -->\n```json\n{{\"status\":\"done\"}}\n```\n{COMPLETION_SENTINEL}"
+        with tempfile.TemporaryDirectory() as tmp:
+            active_file = Path(tmp) / "active.json"
+            active_file.write_text(
+                '{"issue": 7, "repo": "owner/repo", "worker_pid": 999999, '
+                '"started": "2026-05-21T13:01:00+00:00"}'
+            )
+            status_updates: list[str] = []
+            comments: list[str] = []
+            dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+            dispatcher.config = SimpleNamespace(
+                active_file=active_file,
+                taskboard_repo="owner/repo",
+            )
+            dispatcher.tracker = SimpleNamespace(
+                get_issue_state=lambda repo, number: "OPEN",
+                get_issue_summary=lambda repo, number: {
+                    "title": "Task",
+                    "labels": [],
+                    "comments": [{"body": done, "createdAt": "2026-05-21T13:00:00Z"}],
+                },
+                upsert_managed_comment=lambda repo, number, body: comments.append(body),
+                set_project_board_status=lambda number, status, title, labels, repo: status_updates.append(status),
+                remove_assignee=lambda repo, number: None,
+            )
+            dispatcher.pid_alive = lambda pid: False  # type: ignore[method-assign]
+            dispatcher.queue_status_key = lambda repo, number: "todo"  # type: ignore[method-assign]
+            dispatcher.completed_status_key = lambda repo, number, summary: self.fail("old completion should not be reused")  # type: ignore[method-assign]
+
+            self.assertFalse(dispatcher.worker_is_running())
+
+            self.assertEqual(status_updates, ["todo"])
+            self.assertFalse(active_file.exists())
+            self.assertIn("No completion marker was posted after this worker started", comments[0])
+
+    def test_dead_worker_uses_completion_after_worker_start(self) -> None:
+        done = f"<!-- clawqueue:result -->\n```json\n{{\"status\":\"done\"}}\n```\n{COMPLETION_SENTINEL}"
+        with tempfile.TemporaryDirectory() as tmp:
+            active_file = Path(tmp) / "active.json"
+            active_file.write_text(
+                '{"issue": 7, "repo": "owner/repo", "worker_pid": 999999, '
+                '"started": "2026-05-21T13:00:00+00:00"}'
+            )
+            status_updates: list[str] = []
+            dispatcher = ClawQueueDispatcher.__new__(ClawQueueDispatcher)
+            dispatcher.config = SimpleNamespace(
+                active_file=active_file,
+                taskboard_repo="owner/repo",
+            )
+            dispatcher.tracker = SimpleNamespace(
+                get_issue_state=lambda repo, number: "OPEN",
+                get_issue_summary=lambda repo, number: {
+                    "title": "Task",
+                    "labels": [],
+                    "comments": [{"body": done, "createdAt": "2026-05-21T13:01:00Z"}],
+                },
+                upsert_managed_comment=lambda repo, number, body: None,
+                set_project_board_status=lambda number, status, title, labels, repo: status_updates.append(status),
+                remove_assignee=lambda repo, number: None,
+            )
+            dispatcher.pid_alive = lambda pid: False  # type: ignore[method-assign]
+            dispatcher.completed_status_key = lambda repo, number, summary: "review"  # type: ignore[method-assign]
+
+            self.assertFalse(dispatcher.worker_is_running())
+
+            self.assertEqual(status_updates, ["review"])
+            self.assertFalse(active_file.exists())
 
     def test_processed_command_ledger_reads_legacy_state_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

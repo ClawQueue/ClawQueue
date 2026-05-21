@@ -274,6 +274,40 @@ class ClawQueueDispatcher:
                 return body
         return ""
 
+    @classmethod
+    def latest_completion_comment_after(cls, comments: list, started_at: str | None) -> str:
+        if not started_at:
+            return cls.latest_completion_comment(comments)
+        try:
+            started = cls.parse_github_timestamp(started_at)
+        except ValueError:
+            return cls.latest_completion_comment(comments)
+
+        for comment in reversed(comments):
+            if not isinstance(comment, dict):
+                continue
+            created_at = comment.get("createdAt") or comment.get("created_at")
+            if not created_at:
+                continue
+            try:
+                created = cls.parse_github_timestamp(str(created_at))
+            except ValueError:
+                continue
+            body = str(comment.get("body", ""))
+            if created >= started and cls.is_completion_comment(body):
+                return body
+        return ""
+
+    @staticmethod
+    def parse_github_timestamp(value: str) -> datetime:
+        normalized = value.strip()
+        if normalized.endswith("Z"):
+            normalized = normalized[:-1] + "+00:00"
+        parsed = datetime.fromisoformat(normalized)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+
     @staticmethod
     def dependency_issue_numbers(body: str) -> set[int]:
         numbers: set[int] = set()
@@ -1416,16 +1450,23 @@ class ClawQueueDispatcher:
         if issue:
             state = self.tracker.get_issue_state(repo, issue)
             summary = self.tracker.get_issue_summary(repo, issue)
-            status_key = (
-                "done" if state == "CLOSED" else self.completed_status_key(repo, issue, summary)
-            )
             title = summary.get("title", "")
             labels = [label.get("name", "") for label in summary.get("labels", [])]
             comments = summary.get("comments") or []
-            body = self.latest_completion_comment(comments)
+            body = self.latest_completion_comment_after(comments, data.get("started"))
+            if state == "CLOSED":
+                status_key = "done"
+            elif body:
+                status_key = self.completed_status_key(repo, issue, summary)
+            else:
+                status_key = self.queue_status_key(repo, issue)
             result = extract_result(body) or {}
             result_status = result.get("status")
             details = ["Worker process exited; CQ reconciled issue state."]
+            if not body and state != "CLOSED":
+                details.append(
+                    "No completion marker was posted after this worker started; CQ queued the issue for retry instead of reusing an older completion."
+                )
             progress_status = status_key
             if result_status in {"failed", "blocked"}:
                 self.tracker.add_label(repo, issue, "cq:paused")
