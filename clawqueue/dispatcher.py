@@ -1342,6 +1342,43 @@ class ClawQueueDispatcher:
         except (OSError, TypeError):
             return False
 
+    @staticmethod
+    def terminate_worker_process(pid: Optional[int]) -> None:
+        if not pid:
+            return
+        try:
+            os.killpg(int(pid), 15)
+        except OSError:
+            try:
+                os.kill(int(pid), 15)
+            except OSError:
+                pass
+
+    def active_worker_has_terminal_error(self, repo: str, issue: int) -> bool:
+        task = Task(
+            number=issue,
+            title="",
+            body="",
+            labels=[],
+            mode_label="",
+            agent_name="",
+            priority=0,
+            repo=repo,
+        )
+        path = self.runner.worker_log_path(task)
+        try:
+            text = path.read_text(encoding="utf-8", errors="replace")[-8000:]
+        except OSError:
+            return False
+        return any(
+            marker in text
+            for marker in (
+                "Context overflow:",
+                "isError=true",
+                "rawError=",
+            )
+        )
+
     def check_lock(self) -> bool:
         if not self.config.lock_file.exists():
             return False
@@ -1426,10 +1463,7 @@ class ClawQueueDispatcher:
         except Exception as exc:
             print(f"⚠️ Completion notification error: {exc}")
         if self.pid_alive(pid):
-            try:
-                os.kill(pid, 15)
-            except OSError:
-                pass
+            self.terminate_worker_process(pid)
         self.config.active_file.unlink(missing_ok=True)
         return True
 
@@ -1446,7 +1480,11 @@ class ClawQueueDispatcher:
         issue = data.get("issue")
         repo = data.get("repo", self.config.taskboard_repo)
         if self.pid_alive(pid):
-            return True
+            if issue and self.active_worker_has_terminal_error(repo, int(issue)):
+                print(f"🧹 Active worker for {repo}#{issue} has terminal log errors; terminating and requeueing")
+                self.terminate_worker_process(pid)
+            else:
+                return True
         if issue:
             state = self.tracker.get_issue_state(repo, issue)
             summary = self.tracker.get_issue_summary(repo, issue)

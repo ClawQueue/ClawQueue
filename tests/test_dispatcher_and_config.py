@@ -634,5 +634,36 @@ class RunnerPathTests(unittest.TestCase):
         self.assertIn("Artifact destination: write deliverables under `.clawqueue/boards`", prompt)
 
 
+class RunnerOpenClawContextTests(unittest.TestCase):
+    def test_openclaw_worker_uses_fresh_cq_session(self) -> None:
+        from clawqueue.runner import AgentRunner
+        from clawqueue.tracker import Task
+
+        runner = AgentRunner(
+            SimpleNamespace(
+                runner_backend="openclaw",
+                openclaw_command="openclaw",
+                deliver_channel="none",
+            ),
+            tracker=None,
+        )
+        task = Task(
+            number=14,
+            title="Task",
+            body="",
+            labels=[],
+            mode_label="cto",
+            agent_name="manobot-cto",
+            priority=0,
+            repo="WeatherXM/AWS2GCP",
+        )
+
+        cmd = runner.build_worker_command(task, "hello")
+
+        self.assertIn("openclaw agent --agent manobot-cto", cmd)
+        self.assertIn("--session-id cq-WeatherXM-AWS2GCP-0014-", cmd)
+        self.assertIn("-m hello", cmd)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -80,6 +80,10 @@ class AgentRunner:
         repo = self.path_slug(task.repo.replace("/", "-"))
         return self.config.state_dir / "worker-logs" / repo / f"issue-{task.number:04d}.log"
 
+    def worker_session_id(self, task: Task) -> str:
+        repo_slug = self.path_slug(task.repo.replace("/", "-"))
+        return f"cq-{repo_slug}-{task.number:04d}-{int(time.time())}"
+
     def build_worker_command(self, task: Task, prompt: str) -> str:
         backend = self.config.runner_backend
 
@@ -96,6 +100,7 @@ class AgentRunner:
             delivery = f"--deliver --channel {shlex.quote(self.config.deliver_channel)} "
         return (
             f"{self.config.openclaw_command} agent --agent {shlex.quote(task.agent_name)} "
+            f"--session-id {shlex.quote(self.worker_session_id(task))} "
             f"{thinking}"
             f"{delivery}"
             f"-m {shlex.quote(prompt)}"
@@ -105,16 +110,32 @@ class AgentRunner:
         if not self.tracker:
             return "### Untrusted issue comments\n\n_Comments unavailable in this runtime._"
         comments = []
+        total_chars = 0
+        max_comment_chars = 8000
+        max_total_chars = 24000
         for comment in self.tracker.issue_comments(task.repo, task.number):
             body = str(comment.get("body", "")).strip()
             if not body or "<!-- clawqueue:" in body:
                 continue
+            if len(body) > max_comment_chars:
+                body = body[:max_comment_chars].rstrip() + "\n\n[truncated by CQ: comment exceeded 8000 chars]"
             author = (comment.get("user") or {}).get("login", "unknown")
             created_at = comment.get("created_at", "")
-            comments.append(f"#### {author} at {created_at}\n\n```markdown\n{body}\n```")
+            block = f"#### {author} at {created_at}\n\n```markdown\n{body}\n```"
+            comments.append(block)
         if not comments:
             return "### Untrusted issue comments\n\n_No non-CQ comments found._"
-        return "### Untrusted issue comments\n\n" + "\n\n".join(comments[-20:])
+
+        selected = []
+        for block in reversed(comments[-20:]):
+            block_len = len(block)
+            if selected and total_chars + block_len > max_total_chars:
+                selected.append("_Older/larger comments omitted by CQ to keep worker context bounded._")
+                break
+            selected.append(block)
+            total_chars += block_len
+        selected.reverse()
+        return "### Untrusted issue comments\n\n" + "\n\n".join(selected)
 
     def board_guidance_section(self, task: Task) -> str:
         board = (task.project_name or "").strip()
