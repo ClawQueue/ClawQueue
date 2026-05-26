@@ -1302,6 +1302,23 @@ class ClawQueueDispatcher:
                 self.tracker.set_project_board_status(number, status_key, "", labels, repo=repo)
             else:
                 print(f"🧹 Stale In Progress: {repo}#{number} has no active worker → {status_key.title()}")
+                title = summary.get("title", "")
+                attempts = self.get_attempt_count(repo, number)
+                details = [
+                    f"Attempt #{attempts} was interrupted, exited, or crashed before posting a completed marker.",
+                    "ClawQueue automatically rescued this orphaned task and reset it back to Todo for retry."
+                ]
+                self.tracker.upsert_managed_comment(
+                    repo,
+                    number,
+                    progress_body(
+                        status="todo",
+                        repo=repo,
+                        issue=number,
+                        title=title,
+                        details=details,
+                    ),
+                )
                 self.tracker.set_project_board_status(number, status_key, "", labels, repo=repo)
 
     def load_attempt_counts(self) -> dict:
