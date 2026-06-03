@@ -22,4 +22,10 @@ future is more certain than it is.
 - Better profile/worklog separation
 - Stronger diagnostics for misconfigured agents, projects, and labels
 
+### Pre-Flight Deep Research Mode
+To combat the "garbage-in, garbage-out" problem of vague or ambiguous issue specifications, we are introducing a dedicated, iterative pre-flight research workflow. When a ticket is created with raw human intent, a specialized research worker runs a multi-step context collection loop—crawling local workspace files, project documentation, and external resources—to compile a comprehensive technical specification or RFC. This specification is posted back to the GitHub issue for human review, ensuring clear requirements are locked in *before* code execution agents are dispatched.
+
+### Multi-Model Compare & A/B Review
+Evaluating system prompt tweaks, persona adjustments, or competing model capabilities (e.g., Azure AI Foundry vs. Anthropic) is difficult in isolated local environments. We are adding an automated A/B-testing framework directly into the CQ scheduler. By labeling an issue for comparison, the control loop dispatches the task to multiple candidate agents or model backends in parallel. The resulting code and artifact variations are submitted as competing pull request drafts or structured side-by-side comments, allowing the operator to perform objective, blind reviews directly within the GitHub native interface.
+
 Concrete work should be tracked as issues.
