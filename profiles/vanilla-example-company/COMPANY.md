@@ -1,4 +1,4 @@
-# Example SaaS Company Charter
+# Vanilla Example Company Charter
 
 This profile is a safe sample company setup for ClawQueue. It gives agents enough flavor to act like a small SaaS team without encoding any real customer's secrets, strategy, private boards, or proprietary operating context.
 

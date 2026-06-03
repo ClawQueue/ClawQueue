@@ -1,4 +1,4 @@
-# Example Work Guidance
+# Vanilla Example Work Guidance
 
 This folder is for optional hand-authored board guidance only, not generated deliverables.
 

@@ -2,7 +2,7 @@
 
 These files define the cognitive context injected into each agent when picking up a GitHub issue. The scheduler/dispatcher reads the issue labels, selects the appropriate mode file, and prepends it to the task prompt.
 
-All modes inherit `COMPANY_CHARTER.md`. They support ExampleCo SaaS work across product, engineering, data/research, sales, marketing, social, partnerships, operations, and review.
+All modes inherit `COMPANY_CHARTER.md`. They support VanillaExampleCo SaaS work across product, engineering, data/research, sales, marketing, social, partnerships, operations, and review.
 
 ## Label -> Agent -> Mode Routing
 
@@ -40,7 +40,7 @@ These categories describe the work. They do not replace the existing routing lab
 
 Agents are internal team assistants. External-facing work is draft-only until a human approves it.
 
-Human approval is required before publishing, sending, pricing, promising, or committing anything related to public communications, outbound sales or partnerships, commercial terms, legal/financial/regulatory/token claims, official roadmap, product delivery, or official ExampleCo authority.
+Human approval is required before publishing, sending, pricing, promising, or committing anything related to public communications, outbound sales or partnerships, commercial terms, legal/financial/regulatory/token claims, official roadmap, product delivery, or official VanillaExampleCo authority.
 
 ## Agents
 

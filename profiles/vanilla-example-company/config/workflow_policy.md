@@ -161,14 +161,14 @@
 }
 ---
 
-# Example SaaS Workflow Policy
+# Vanilla Example Company Workflow Policy
 
-This file is the profile-owned workflow and routing policy for the bundled example SaaS company.
+This file is the profile-owned workflow and routing policy for the bundled vanilla example company.
 
 - The frontmatter is JSON, which is valid YAML syntax and easy to parse without third-party dependencies.
 - It is safe to commit because it contains placeholder repo names only.
-- Private GitHub Project node IDs, status option IDs, assignee names, notification credentials, local agent IDs, and machine-specific paths belong in ignored `profiles/example/config/clawqueue.private.json`, `profiles/example/secrets/`, or environment variables.
-- Shared deployments should run with `--profile example`, not only `CLAWQUEUE_POLICY_FILE`, so CQ resolves profile-relative modes/agents and each operator's ignored private config from their own checkout.
+- Private GitHub Project node IDs, status option IDs, assignee names, notification credentials, local agent IDs, and machine-specific paths belong in ignored `profiles/vanilla-example-company/config/clawqueue.private.json`, `profiles/vanilla-example-company/secrets/`, or environment variables.
+- Shared deployments should run with `--profile vanilla-example-company`, not only `CLAWQUEUE_POLICY_FILE`, so CQ resolves profile-relative modes/agents and each operator's ignored private config from their own checkout.
 - Deployments can override mode-to-agent, agent-provider, fallback routing, projects, repositories, artifacts, and notifications without editing tracked core code.
 
 Default project concepts:

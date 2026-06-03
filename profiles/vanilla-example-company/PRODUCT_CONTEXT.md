@@ -1,10 +1,10 @@
-# Example SaaS Product Context
+# Vanilla Example Product Context
 
 This file gives CQ agents a compact product map for the bundled example SaaS company. It is intentionally generic and safe to publish. Replace it with your own profile context when creating a real deployment.
 
 ## Company in one page
 
-ExampleCo is a small B2B SaaS company with:
+VanillaExampleCo is a small B2B SaaS company with:
 
 - **Product app** — customer-facing web application, onboarding, account settings, billing, and core workflows.
 - **Data and analytics** — product metrics, activation/retention funnels, customer feedback, and reporting.

@@ -1,20 +1,20 @@
-# Example CQ Profile
+# Vanilla Example Company CQ Profile
 
-This is the bundled sample profile for ClawQueue. It represents a generic SaaS company with enough role flavor to demonstrate profile-specific agents, modes, routing policy, and work artifacts without exposing any real company context.
+This is the bundled sample profile for ClawQueue. It represents a generic "vanilla" SaaS company with enough role flavor to demonstrate profile-specific agents, modes, routing policy, and work artifacts without exposing any real company context.
 
 CQ core should stay generic. Real company/project context should live in a selected profile such as this one, a private deployment profile, or an untracked/private profile repository.
 
 ## Layout
 
 ```text
-profiles/example/
+profiles/vanilla-example-company/
   README.md
-  COMPANY.md                 # sample SaaS mission, operating principles, approval boundaries
+  COMPANY.md                 # vanilla SaaS mission, operating principles, approval boundaries
   PRODUCT_CONTEXT.md         # compact generic SaaS product/system map for agents
-  agents/                    # example agent identities and souls
-  modes/                     # example mode prompts
+  agents/                    # vanilla agent identities and souls
+  modes/                     # vanilla mode prompts
   config/
-    workflow_policy.md       # example routing/project policy
+    workflow_policy.md       # vanilla routing/project policy
     clawqueue.private.example.json
   boards/<board>/BOARD_GUIDANCE.md  # optional hand-authored board guidance
   secrets/                   # ignored/private by default
@@ -27,21 +27,21 @@ Generated artifacts should not be committed to this profile by default. They go 
 With only this profile present, CQ can auto-select it. If multiple profiles exist, choose one explicitly:
 
 ```bash
-python3 scripts/status.py --profile example --no-queue
-python3 scripts/scheduler.py --profile example
-python3 scripts/install_launchd.py --repo "$HOME/ClawQueue" --profile example
+python3 scripts/status.py --profile vanilla-example-company --no-queue
+python3 scripts/scheduler.py --profile vanilla-example-company
+python3 scripts/install_launchd.py --repo "$HOME/ClawQueue" --profile vanilla-example-company
 ```
 
 Or set:
 
 ```bash
-export CLAWQUEUE_PROFILE=example
+export CLAWQUEUE_PROFILE=vanilla-example-company
 ```
 
 Or add `.clawqueue/config.yaml`:
 
 ```yaml
-profile: example
+profile: vanilla-example-company
 ```
 
 ## Bootstrap agents
@@ -64,9 +64,9 @@ The example policy uses placeholder boards:
 | `GROWTH` | Sales, marketing, social, partnerships, and conversion work |
 | `DATA` | Analytics, research, dashboards, APIs, and experiment work |
 
-Keep the tracked policy portable. Put shared placeholders or company-owned non-secret defaults in `profiles/example/config/workflow_policy.md`; put each operator's local paths, agent IDs, assignee, notification targets, credentials, and private overrides in ignored `profiles/example/config/clawqueue.private.json`.
+Keep the tracked policy portable. Put shared placeholders or company-owned non-secret defaults in `profiles/vanilla-example-company/config/workflow_policy.md`; put each operator's local paths, agent IDs, assignee, notification targets, credentials, and private overrides in ignored `profiles/vanilla-example-company/config/clawqueue.private.json`.
 
-For shared profiles, run CQ with `--profile example` rather than `CLAWQUEUE_POLICY_FILE`; profile selection resolves `modes/`, `agents/`, and the ignored private config from each user's local checkout.
+For shared profiles, run CQ with `--profile vanilla-example-company` rather than `CLAWQUEUE_POLICY_FILE`; profile selection resolves `modes/`, `agents/`, and the ignored private config from each user's local checkout.
 
 Recommended default CQ status flow for the example profile:
 - Todo
@@ -111,14 +111,14 @@ Do not mix generated artifacts into the same branch used for code/profile PRs.
 
 ## Safety
 
-Do not commit tokens, chat IDs, customer data, private exports, credentials, or real board IDs unless the profile is private and that is intentional. Put sensitive deployment files under `profiles/example/secrets/` or provide them through environment variables.
+Do not commit tokens, chat IDs, customer data, private exports, credentials, or real board IDs unless the profile is private and that is intentional. Put sensitive deployment files under `profiles/vanilla-example-company/secrets/` or provide them through environment variables.
 
 ## Creating your own profile
 
 Copy this folder:
 
 ```bash
-cp -R profiles/example profiles/acme
+cp -R profiles/vanilla-example-company profiles/acme
 ```
 
 Then edit `COMPANY.md`, `PRODUCT_CONTEXT.md`, `agents/`, `modes/`, and `config/` for your real team.
