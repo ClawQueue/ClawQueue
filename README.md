@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/public/brand/png/ClawQueue-alpha.png" alt="ClawQueue — a GitHub-native control loop for human-agent work" width="360"/>
+  <img src="docs/public/brand/png/clawqueue-logo-full-horizontal.png" alt="ClawQueue — a GitHub-native control loop for human-agent work" width="720"/>
 </div>
 
 <br/>
@@ -17,7 +17,7 @@
 
 ClawQueue (CQ) is a **local human-agent workflow engine for GitHub**.
 
-Powered by OpenClaw for context-rich intake and, when configured, agent execution, CQ turns project context and operator intent into durable GitHub issues, then dispatches local workers to execute, report, and improve the work through reviewable GitHub history.
+Combined with OpenClaw, CQ helps turn project context and operator intent into durable GitHub issues, then dispatches local agents to execute, report, and improve the work through reviewable GitHub history.
 
 CQ is intentionally small: **GitHub holds the durable work contract, OpenClaw helps shape the work, your machine runs the workers, and policy stays in markdown/config you can edit while using it.**
 
@@ -35,7 +35,7 @@ CQ works in two very practical modes:
 | **What is it?** | A local control loop that turns project context and human intent into GitHub issues, agent execution, artifacts, and PR-ready outcomes |
 | **Where does work live?** | GitHub issues, boards, labels, comments, artifacts, and review history |
 | **Where does context live?** | In OpenClaw/profile workspaces, markdown policy, local config, and issue history |
-| **What runs work?** | CQ’s local scheduler launches the configured backend: OpenClaw agents by default/full-harness, or Claude Code/Codex direct CLI runners |
+| **What runs work?** | OpenClaw subagents (primary local runtime and execution sandbox) |
 | **Who is it for?** | A trusted operator or small team that wants GitHub-native agent work without a hosted PM layer |
 | **What is it not?** | A SaaS workflow product, public bot, secure multi-tenant executor, or fake “AI company OS” |
 
@@ -79,36 +79,30 @@ Start with the [docs](https://clawqueue.github.io/ClawQueue/), especially [Getti
 ## How CQ Fits
 
 ```mermaid
-flowchart LR
-    A[Project docs + repo context] --> B[OpenClaw intake]
-    C[Operator idea / request] --> B
-    B --> D[Scoped GitHub issue]
-    D --> E[GitHub Project queue]
-    E --> F[CQ local scheduler]
-    F --> G{Labels + profile policy}
-    G --> H[OpenClaw agent]
-    G --> I[Claude Code CLI]
-    G --> J[Codex CLI]
-    H --> K[Issue comment + artifact/PR]
-    I --> K
-    J --> K
-    K --> L{Code/config/docs change?}
-    L -->|cq:change| M[Review lane]
-    M --> N[reviewer agent]
-    N --> O[Human acceptance in GitHub]
-    L -->|artifact/report| O
+flowchart TD
+    A[Operator Intent & Docs] -->|1. Intake| B[OpenClaw Main Session]
+    B -->|2. Shapes & Scopes| C[Durable GitHub Issue]
+    C -->|3. Column State| D[GitHub Project Board / Queue]
+    D -->|4. Polls & Schedules| E[ClawQueue Local Scheduler]
+    E -->|5. Dispatches Workflow| F[OpenClaw Main Session]
+    F -->|6. Spawns Isolated Subagents| G[OpenClaw Subagent Sandbox]
+    G -->|7. Code / Review / QA| G
+    G -->|8. Writes Double-Entry Log| H[Durable Worklog Repo / Artifacts]
+    G -->|9. Creates PR & Comments| C
+    C -->|10. Operator Approves| I[GitHub Main Branch]
 ```
-
-In this model, the human operator can ask OpenClaw for help in plain language; OpenClaw uses project context to shape that rough intent into a full GitHub issue, and ClawQueue provides the GitHub-native queue, scheduler, policy, and reporting loop that carries the issue through execution and review.
 
 The intended operating loop is:
 
-1. OpenClaw reads the relevant project context, current conversation, and operator intent.
-2. A person or chief-of-staff assistant turns that messy intent into a scoped GitHub issue.
-3. GitHub Issues/Projects provide the shared queue, audit trail, and output history.
-4. CQ scans eligible issues, resolves labels into agent modes, moves board status, and starts one worker.
-5. The worker runs through OpenClaw, Claude Code (`claude`), or Codex (`codex`) and reports back with an artifact, code change, or PR-ready result.
-6. For `cq:change` work, CQ moves the completed issue to Review where the `reviewer` agent or a human checks the result before acceptance.
+1. **Intake:** OpenClaw reads the relevant project context, current conversation, and operator intent.
+2. **Scoping:** A human or a chief-of-staff assistant turns that messy intent into a scoped, structured GitHub issue.
+3. **Queueing:** GitHub Issues and Projects provide the shared queue, audit trail, and visible board state.
+4. **Scheduling:** The ClawQueue scheduler scans eligible issues, resolves labels to specific profiles, and dispatches the task.
+5. **Execution (The OpenClaw Subagent Sandbox):** ClawQueue starts an OpenClaw main session, which leverages OpenClaw's native orchestration engine to spawn isolated, task-specific subagents. These subagents carry out the execution (writing code, drafting documents, analyzing data) within secure, sandboxed environments.
+6. **Artifacting:** The subagent commits its deliverables (artifacts) to a separate Git worklog repository, creating a double-entry accounting trail of all agent actions.
+7. **Delivery & Review:** The subagent posts an execution report as a GitHub comment, opens a PR, transitions the board card to `In Review`, and awaits human sign-off.
+
+*Note: While ClawQueue can fall back to external CLI backends (like Claude Code or Codex), its primary execution substrate is the OpenClaw subagent runtime, ensuring high security, local-first tool execution, and rich cross-agent collaboration.*
 
 For multiple people, each person should run their own CQ/OpenClaw instance against the same GitHub boards, with their own accounts, secrets, approvals, and local context. By default CQ only dispatches `Todo` items. A deployment can opt into other dispatch statuses in its profile policy, but Review is usually a human/operator lane.
 
@@ -159,7 +153,7 @@ This keeps CQ easy to upgrade while private company context can evolve in its ow
 
 Generated reports and research artifacts should not be mixed into product/profile PR branches. CQ defaults to ignored local artifacts under `.clawqueue/boards`; companies that want artifact history in git should use a second repo dedicated to worklog/artifacts. See the [artifacts guide](https://clawqueue.github.io/ClawQueue/guide/artifacts).
 
-CQ works with the default GitHub Project status flow out of the box: `Todo`, `In Progress`, `Done`, with dispatch defaulting to `Todo` only. Teams that want a richer human-agent workflow can extend the board manually in the GitHub UI with statuses such as `Inbox`, `Review`, and `Blocked`. When `Review` is included in a project's `dispatch_statuses`, completed `cq:change` work moves to Review, the `reviewer` agent can pick it up, and a passing reviewer result with `extra_review_required=false` moves the item to Done. Bootstrap a new GitHub Project board with `python3 scripts/bootstrap_project_board.py`.
+CQ works with the default GitHub Project status flow out of the box: `Todo`, `In Progress`, `Done`, with dispatch defaulting to `Todo` only. Teams that want a richer human-agent workflow can extend the board manually in the GitHub UI with statuses such as `Inbox`, `Review`, and `Blocked`. Bootstrap a new GitHub Project board with `python3 scripts/bootstrap_project_board.py`.
 
 ---
 
@@ -204,17 +198,16 @@ GitHub issue in Todo
       claudecode →  claude -p <prompt> --print
       codex      →  codex -p <prompt>
   → worker comments completion  <!-- clawqueue:done -->
-  → CQ moves completed cq:change work to Review where configured
-  → reviewer agent or human reviews the result
-  → passing reviewer result (extra_review_required=false) moves Review → Done
-  → failed/blocked review stays visible for retry or human action
+  → CQ moves completed work to Review and closes the GitHub issue
+  → human reviews while closed, then either drags Review → Done or reopens in Review for revision
+  → reopened Review issue is eligible for a reviewer/revision agent
 ```
 
-ClawQueue decides **which issue** gets picked, **which policy applies**, and **which backend** launches it. OpenClaw is usually upstream as the context-rich intake/chief-of-staff layer; when using the `openclaw` backend, it is also the runtime that launches the named specialist agent. With `claudecode` or `codex`, CQ passes the full task prompt directly to that CLI instead.
+ClawQueue decides **which issue** gets picked and **which backend** launches it. OpenClaw is usually upstream as the context-rich intake/chief-of-staff layer; when using the `openclaw` backend, it is also the runtime that launches the named specialist agent. With `claudecode` or `codex`, the runner passes the full task prompt directly to that CLI.
 
 An issue is eligible when it is **open, unassigned, on a configured board status listed in that project’s `dispatch_statuses` policy**, under the attempt cap, and not blocked by locks, throttles, activity gates, or quota guards. The default policy is `Todo` only.
 
-Recommended convention: open + Review means “ready for reviewer/human review”; closed + Done means “accepted/final.” If a deployment wants Review to remain human-only, leave Review out of `dispatch_statuses`.
+Recommended human-in-the-loop convention: closed + Review means “deliverable ready, human review pending, scheduler must wait”; open + Review means “changes requested, scheduler may revise”; closed + Done means “accepted/final.”
 
 ---
 
@@ -566,12 +559,9 @@ Workers should not directly close issues or move board status. They report a sma
   "status": "done",
   "summary": "Brief operator-facing summary.",
   "files_changed": ["relative/path-or-github-url"],
-  "review_level": "standard",
-  "extra_review_required": false
+  "needs_review": true
 }
 ```
-
-`review_level` is issue-intake policy, not worker vibes. The chief-of-staff assistant should set `review_level: standard` for ordinary scoped changes and `review_level: extra` for high-risk, broad, security-sensitive, public-facing, or hard-to-verify changes. Workers and reviewers report `extra_review_required: true` only when another stronger pass is still needed before acceptance. Older `needs_review` result comments are still accepted as a compatibility alias.
 
 Supported commands:
 
@@ -642,16 +632,8 @@ Tracked files must not contain bot tokens, chat IDs, ProjectV2 node IDs, persona
 ---
 
 ## Design System
-ClawQueue ships a compact docs/brand system: full horizontal logo, mascot hero art, deep navy workflow panels, orange/red claw-gradient CTAs, `Space Grotesk` headings, and `Inter` body copy.
-
-The current implementation lives in:
-
-- [`docs/.vitepress/theme/components/HomePage.vue`](docs/.vitepress/theme/components/HomePage.vue) — custom docs homepage
-- [`docs/.vitepress/theme/style.css`](docs/.vitepress/theme/style.css) — active VitePress theme tokens/components
-- [`docs/.vitepress/brand/README.md`](docs/.vitepress/brand/README.md) — design system root note and asset usage
-- [`docs/public/brand/`](docs/public/brand/) — public logo, mascot, favicon, CSS, and token assets
-
-Use `docs/public/brand/png/clawqueue-logo-full-horizontal.png` for the root README/header logo. Do not point docs at the old missing `docs/banner.svg`.
+ClawQueue ships a compact design system for the operator UI — deep navy, precise typography, and an amber accent for agent activity.
+Open [`index.html`](index.html) in a browser for the full design system hub — colors, typography, spacing, and all components.
 
 ---
 
