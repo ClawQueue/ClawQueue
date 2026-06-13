@@ -53,34 +53,22 @@
       "reviewer": "cto"
     },
     "project_routing_keywords": {
-      "GROWTH": [
-        "docs",
-        "readme",
-        "launch",
-        "website",
-        "messaging",
-        "positioning",
-        "social",
-        "community",
-        "adoption",
-        "onboarding",
-        "examples",
-        "research",
-        "competitor",
-        "operator interview",
-        "feedback"
-      ],
-      "OPS": [
-        "ops",
-        "runbook",
-        "release",
-        "deploy",
+      "CQC": [
+        "core",
+        "framework",
+        "scheduler",
+        "dispatcher",
+        "runner",
         "launchd",
-        "cron",
+        "issue",
+        "command",
         "worklog",
         "artifacts",
-        "diagnose",
-        "self-host",
+        "readme",
+        "docs",
+        "ops",
+        "release",
+        "deploy",
         "policy"
       ]
     }
