@@ -194,9 +194,11 @@ GitHub issue in Todo
   → labels resolve to a mode and agent
   → issue is assigned and moved to In Progress
   → runner starts the selected backend:
-      openclaw  →  openclaw agent --agent <name>
-      claudecode →  claude -p <prompt> --print
-      codex      →  codex -p <prompt>
+      openclaw         →  openclaw agent --agent <name>
+      claudecode       →  claude -p <prompt> --print
+      codex            →  codex -p <prompt>
+      antigravity      →  agy -p <prompt> --dangerously-skip-permissions (headless CLI)
+      antigravity-gui  →  python3 scripts/run_antigravity_gui.py --prompt <prompt> (CDP-driven desktop app via AG2R)
   → worker comments completion  <!-- clawqueue:done -->
   → CQ moves completed work to Review and closes the GitHub issue
   → human reviews while closed, then either drags Review → Done or reopens in Review for revision
@@ -382,25 +384,61 @@ Keep these as examples, not CQ defaults. Real company board keys, titles, repo m
 
 ## Runner Backends
 
-ClawQueue supports three execution backends. Set `runner_backend` in the policy file or `CLAWQUEUE_RUNNER_BACKEND` env var.
+ClawQueue supports five execution backends. Set `runner_backend` in the policy file or `CLAWQUEUE_RUNNER_BACKEND` env var.
 
 | Backend | Value | Command | Auth needed | Best for |
 |---|---|---|---|---|
 | OpenClaw | `openclaw` (default) | `openclaw agent --agent <name> --deliver ...` | OpenClaw configured on PATH | Full OpenClaw harness: memory, delivery, multi-step agents |
 | Claude Code CLI | `claudecode` | `claude -p <prompt> --print --output-format text` | Local `claude` CLI auth; may be API-key based or subscription/session based depending on the operator setup | Direct Claude execution when the operator has explicitly configured and approved that CLI use |
 | Codex CLI | `codex` | `codex -p <prompt>` | Local `codex` CLI auth; may be OpenAI API-key based or subscription/session based depending on the installed CLI/account | Direct Codex/OpenAI execution; often useful for implementation and code-heavy tasks |
+| Antigravity CLI | `antigravity` | `agy -p <prompt> --dangerously-skip-permissions` | Local Google AI `agy` CLI on PATH | Headless, standalone terminal execution via Google's Go-based agent CLI |
+| Antigravity 2.0 GUI + AG2R | `antigravity-gui` | `python3 scripts/run_antigravity_gui.py --prompt <prompt>` | Antigravity desktop app open (CDP port 9000) & AG2R server running (HTTPS port 3000) | Live visual inspection on your Mac screen, continuous conversation history, and remote tool permission approval via mobile/web PWA |
 
-When using `claudecode` or `codex`, the runner builds a full task prompt (including the mode instructions and acceptance criteria) and passes it directly to the CLI. OpenClaw is not involved at runtime — it is only needed upstream, as the chief of staff that drafts the issues.
+When using `claudecode`, `codex`, or `antigravity`, the runner builds a full task prompt (including the mode instructions and acceptance criteria) and passes it directly to the CLI. OpenClaw is not involved at runtime.
+
+### Google Antigravity 2.0 & AG2R Interactive GUI Setup
+
+The `antigravity-gui` backend is a unique, high-productivity integration. It allows you to watch ClawQueue's agent execution in real time inside the native **Antigravity 2.0 Electron desktop application** on your Mac. When paired with the **AG2R** remote client, you can inspect progress, see file diffs, and approve tool execution permissions directly from your phone or any browser!
+
+#### Session & Project Preservation
+By default, the `antigravity-gui` backend targets a project folder in the Antigravity sidebar named **`clawqueue`** (case-insensitive).
+* **Context Reuse:** If an active conversation is already open in the `clawqueue` project, it will automatically append the new task to the **same session**, allowing the agent to preserve its continuous history, workspace context, and memory across multiple ClawQueue tasks!
+* **Fallback:** If no conversations exist, or the folder is empty, it automatically clicks the nested `+` icon button to initialize the first chat thread under `clawqueue`.
+
+#### Step-by-Step Running Guide
+
+1. **Launch the Antigravity 2.0 Desktop App with CDP enabled:**
+   ```bash
+   open -a Antigravity --args --remote-debugging-port=9000
+   ```
+2. **Start the AG2R Remote Server:**
+   ```bash
+   cd /Users/manos/Code/ag2r
+   npm install
+   node server.js
+   ```
+   *(Note: The server runs over secure HTTPS on `https://localhost:3000`. You will need to bypass the self-signed certificate warning in your browser by clicking "Advanced" -> "Proceed").*
+
+3. **Deploy a Cloudflare Tunnel for Remote Mobile Control (Optional):**
+   ```bash
+   cloudflared tunnel --url https://localhost:3000 --no-tls-verify
+   ```
+   Open the printed `trycloudflare.com` URL on your phone's browser, accept the cert warning, and add it to your Home Screen to use it as a PWA with Push Notifications for tool permission approvals!
+
+4. **Run ClawQueue with the GUI Backend:**
+   ```bash
+   CLAWQUEUE_RUNNER_BACKEND=antigravity-gui python3 scripts/scheduler.py --profile weatherxm
+   ```
 
 > [!CAUTION]
-> Direct CLI backends inherit whatever account, subscription, API key, local session, quota, and terms apply to that CLI. Do not assume a personal subscription is allowed for automated/background use. In particular, be cautious with subscription-backed Claude/Claude Code sessions and check the relevant Anthropic/OpenAI terms and your organization’s policy before running CQ unattended against those backends. For production or team automation, prefer explicitly configured service/API credentials and clear spend/quota controls.
+> Direct CLI and GUI backends inherit whatever account, subscription, API key, local session, quota, and terms apply to that tool. Do not assume a personal subscription is allowed for automated/background use. Check the relevant terms and your organization’s policy before running CQ unattended against those backends.
 
 ```bash
-# Use Claude Code CLI directly only after the local claude auth model is approved for this use
-CLAWQUEUE_RUNNER_BACKEND=claudecode python3 scripts/scheduler.py
+# Use Antigravity Headless CLI directly
+CLAWQUEUE_RUNNER_BACKEND=antigravity python3 scripts/scheduler.py
 
-# Use Codex CLI directly only after local codex auth, quota, and account policy are understood
-CLAWQUEUE_RUNNER_BACKEND=codex python3 scripts/scheduler.py
+# Use Antigravity Interactive GUI with AG2R Bridge
+CLAWQUEUE_RUNNER_BACKEND=antigravity-gui python3 scripts/scheduler.py
 ```
 
 ---
@@ -473,6 +511,8 @@ Defaults are `~/.openclaw/tmp/clawqueue/<label>` for `CLAWQUEUE_STATE_DIR`, `~/.
 - For `openclaw` backend: `openclaw` on PATH (or set `CLAWQUEUE_OPENCLAW_COMMAND`), and OpenClaw agents configured for `ceo`, `cto`, `dev`, `cmo`, `researcher`, `reviewer`
 - For `claudecode` backend: `claude` CLI on PATH with an auth method explicitly approved for this CQ use case; API-key and subscription/session-backed setups have different policy and quota implications
 - For `codex` backend: `codex` CLI on PATH with an auth method explicitly approved for this CQ use case; API-key and subscription/session-backed setups have different policy and quota implications
+- For `antigravity` backend: `agy` CLI on PATH with valid configuration
+- For `antigravity-gui` backend: Antigravity 2.0 Desktop app installed on `/Applications/` and running with CDP port `9000` (`open -a Antigravity --args --remote-debugging-port=9000`), and `ag2r` cloned, dependencies installed, and running on port `3000`
 - Python available locally. Docs target Python 3.11+, but CQ may still run on older macOS system Python if your installed feature set is compatible; verify with the compile/test commands below.
 
 Telegram, activity gates, quota tuning, mode URL overrides, and fallback maps are optional.
