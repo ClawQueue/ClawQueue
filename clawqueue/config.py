@@ -266,7 +266,7 @@ class RuntimeConfig:
     agent_roles: dict[str, tuple[str, ...]]
     agent_provider: dict[str, str]
     agent_fallback: dict[str, str]
-    runner_backend: str  # "openclaw" | "claudecode" | "codex"
+    runner_backend: str  # "openclaw" | "claudecode" | "codex" | "antigravity" | "antigravity-gui"
     artifact_backend: str  # "local" | "git"
     artifact_repo: str
     artifact_checkout_dir: Path
