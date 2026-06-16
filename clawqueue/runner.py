@@ -93,6 +93,12 @@ class AgentRunner:
         if backend == "codex":
             return f"codex -p {shlex.quote(prompt)}"
 
+        if backend == "antigravity":
+            return f"agy -p {shlex.quote(prompt)} --dangerously-skip-permissions"
+
+        if backend == "antigravity-gui":
+            return f"python3 scripts/run_antigravity_gui.py --prompt {shlex.quote(prompt)}"
+
         # openclaw (default)
         thinking = "--thinking high " if task.agent_name == "ceo" else ""
         delivery = ""
