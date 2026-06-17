@@ -151,6 +151,12 @@ profiles/<company-or-team>/
 
 This keeps CQ easy to upgrade while private company context can evolve in its own git history.
 
+> [!TIP]
+> **Open Knowledge Format (OKF) Recommendation:**
+> When structuring your company profile, wikis, or project documentation (such as `COMPANY.md` or files inside `agents/`), we highly recommend following the **Open Knowledge Format (OKF)**.
+> 
+> By structuring files as plain Markdown with simple YAML frontmatter (defining `type`, `title`, and `description`), you make your private company policies and technical domain guidelines programmatically parseable and navigable by any dispatched AI worker or subagent. For a fully structured reference catalog, see our [docs/catalog.md](https://clawqueue.github.io/ClawQueue/catalog).
+
 Generated reports and research artifacts should not be mixed into product/profile PR branches. CQ defaults to ignored local artifacts under `.clawqueue/boards`; companies that want artifact history in git should use a second repo dedicated to worklog/artifacts. See the [artifacts guide](https://clawqueue.github.io/ClawQueue/guide/artifacts).
 
 CQ works with the default GitHub Project status flow out of the box: `Todo`, `In Progress`, `Done`, with dispatch defaulting to `Todo` only. Teams that want a richer human-agent workflow can extend the board manually in the GitHub UI with statuses such as `Inbox`, `Review`, and `Blocked`. Bootstrap a new GitHub Project board with `python3 scripts/bootstrap_project_board.py`.
