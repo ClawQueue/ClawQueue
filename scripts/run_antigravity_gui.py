@@ -21,7 +21,7 @@ from http.cookiejar import CookieJar
 from pathlib import Path
 
 # Common paths
-AG2R_DIR = Path("/Users/manos/Code/ag2r")
+AG2R_DIR = Path(os.environ.get("AG2R_DIR", Path.home() / "Code/ag2r"))
 
 
 def load_ag2r_env() -> dict[str, str]:
@@ -93,7 +93,7 @@ def main() -> int:
                 print("✅ Successfully authenticated with AG2R.")
         except urllib.error.URLError as exc:
             print(f"❌ Could not connect to AG2R at {login_url}: {exc}", file=sys.stderr)
-            print("💡 Please make sure AG2R is running (`node server.js` in /Users/manos/Code/ag2r).", file=sys.stderr)
+            print(f"💡 Please make sure AG2R is running (`node server.js` in {AG2R_DIR}).", file=sys.stderr)
             print("💡 Also ensure the Antigravity desktop app is open with CDP enabled on port 9000.", file=sys.stderr)
             return 1
 

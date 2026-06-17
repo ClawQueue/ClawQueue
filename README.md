@@ -413,7 +413,7 @@ By default, the `antigravity-gui` backend targets a project folder in the Antigr
    ```
 2. **Start the AG2R Remote Server:**
    ```bash
-   cd /Users/manos/Code/ag2r
+   cd ~/Code/ag2r
    npm install
    node server.js
    ```
