@@ -22,12 +22,19 @@ export default defineConfig({
     logo: '/brand/png/clawqueue-icon-with-queue.png',
     siteTitle: 'ClawQueue',
     nav: [
+      { text: 'Catalog (OKF)', link: '/catalog' },
       { text: 'Guide', link: '/start/getting-started' },
       { text: 'Config', link: '/guide/configuration' },
       { text: 'Roadmap', link: '/roadmap' },
       { text: 'GitHub', link: 'https://github.com/ClawQueue/ClawQueue' }
     ],
     sidebar: [
+      {
+        text: 'Knowledge Catalog',
+        items: [
+          { text: 'OKF Catalog Root', link: '/catalog' }
+        ]
+      },
       {
         text: 'Start',
         items: [

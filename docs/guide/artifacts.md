@@ -1,3 +1,11 @@
+---
+type: Guide
+title: Artifacts
+description: Best practices for storing generated agent artifacts.
+tags: [artifacts, storage, reports]
+timestamp: 2026-06-17T16:28:00Z
+---
+
 # Artifacts
 
 Generated reports, research briefs, and handoff notes should not pollute product

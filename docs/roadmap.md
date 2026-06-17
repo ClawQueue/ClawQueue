@@ -1,3 +1,11 @@
+---
+type: Roadmap
+title: Roadmap
+description: Product direction, near-term themes, and features.
+tags: [roadmap, direction, features]
+timestamp: 2026-06-17T16:28:00Z
+---
+
 # Roadmap
 
 ClawQueue v0.1.0 starts intentionally small and clean.

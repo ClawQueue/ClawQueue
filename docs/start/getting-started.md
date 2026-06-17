@@ -1,3 +1,11 @@
+---
+type: Quickstart
+title: Getting Started
+description: Learn how to install and configure ClawQueue for the first time.
+tags: [setup, installation, requirements]
+timestamp: 2026-06-17T16:28:00Z
+---
+
 # Getting started
 
 ClawQueue is early. For v0.1.0, treat it as a trusted local tool for one
@@ -43,6 +51,6 @@ a periodic scheduler.
 
 ## Next steps
 
-- Learn the [operator workflow](/guide/operator-workflow)
-- Set up [configuration](/guide/configuration)
-- Decide where [artifacts](/guide/artifacts) should live
+- Learn the [operator workflow](/guide/operator-workflow.md)
+- Set up [configuration](/guide/configuration.md)
+- Decide where [artifacts](/guide/artifacts.md) should live

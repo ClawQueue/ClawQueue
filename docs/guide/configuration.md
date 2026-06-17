@@ -1,3 +1,11 @@
+---
+type: Guide
+title: Configuration
+description: Public policy and private configuration split.
+tags: [configuration, config, policy, secrets]
+timestamp: 2026-06-17T16:28:00Z
+---
+
 # Configuration
 
 ClawQueue keeps public workflow policy separate from private deployment values.

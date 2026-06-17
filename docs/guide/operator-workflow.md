@@ -1,3 +1,11 @@
+---
+type: Guide
+title: CQ Operator Workflow
+description: Step-by-step operator workflow and setup instructions.
+tags: [workflow, operator, setup]
+timestamp: 2026-06-17T16:28:00Z
+---
+
 # CQ Operator Workflow
 
 CQ (ClawQueue) is a GitHub issue dispatcher for human-agent teams. The recommended operating model is simple: humans and assistants shape work into issues, GitHub Projects is the queue, and the CQ scheduler periodically picks eligible issues from configured dispatch statuses and launches the right agent.

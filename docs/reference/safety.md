@@ -1,3 +1,11 @@
+---
+type: Reference
+title: Safety Model
+description: Safety principles and assumptions for local agent execution.
+tags: [safety, security, operator-control]
+timestamp: 2026-06-17T16:28:00Z
+---
+
 # Safety model
 
 ClawQueue assumes a trusted operator on a trusted local machine.

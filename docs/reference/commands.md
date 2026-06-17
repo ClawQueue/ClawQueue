@@ -1,3 +1,11 @@
+---
+type: Reference
+title: Commands
+description: CLI commands and script usage reference.
+tags: [cli, commands, execution]
+timestamp: 2026-06-17T16:28:00Z
+---
+
 # Commands
 
 ClawQueue is currently operated through Python scripts.

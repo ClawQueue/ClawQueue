@@ -1,3 +1,11 @@
+---
+type: Guide
+title: Profiles
+description: Profile configuration system for ClawQueue.
+tags: [profiles, config, multi-tenant]
+timestamp: 2026-06-17T16:28:00Z
+---
+
 # Profiles
 
 Profiles let ClawQueue stay generic while each deployment keeps its own company,
